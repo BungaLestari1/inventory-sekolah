@@ -1,0 +1,5203 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
+
+<title>Inventaris SMK Sri Langkat</title>
+
+<style>
+
+*{box-sizing:border-box}
+
+html,body{
+margin:0;
+width:100%;
+min-height:100%;
+font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+background:#f1f5f9;
+color:#172033;
+}
+
+/* Saat halaman login aktif, seluruh halaman dikunci agar tidak ikut scroll. */
+body.login-mode{
+height:100vh;
+min-height:100vh;
+overflow:hidden;
+}
+
+body.login-mode #loginPage{
+height:100vh;
+min-height:100vh;
+overflow-y:auto;
+}
+
+body.app-mode{
+min-height:100vh;
+overflow-x:hidden;
+overflow-y:auto;
+}
+
+button,input,select,textarea{font-family:inherit}
+
+button{cursor:pointer}
+
+#loginPage{
+height:100vh;
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:20px;
+background:linear-gradient(135deg,#0f2a5f,#2563eb);
+overflow-y:auto;
+overflow-x:hidden;
+}
+
+.login-box{
+width:100%;
+max-width:950px;
+background:white;
+border-radius:24px;
+overflow:hidden;
+display:grid;
+grid-template-columns:1fr 1fr;
+box-shadow:0 25px 70px #0004
+}
+
+.login-left{
+background:linear-gradient(160deg,#102a5c,#1d4ed8);
+color:white;
+padding:50px;
+display:flex;
+flex-direction:column;
+justify-content:center
+}
+
+.logo{
+width:90px;
+height:90px;
+border-radius:22px;
+background:white;
+color:#1d4ed8;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:45px;
+margin-bottom:25px
+}
+
+.login-left h1{
+margin:0 0 8px
+}
+
+.login-left p{
+opacity:.85;
+line-height:1.7
+}
+
+.login-right{
+padding:50px;
+display:flex;
+flex-direction:column;
+justify-content:center
+}
+
+.login-right h2{
+margin:0 0 8px;
+font-size:28px
+}
+
+.sub{
+color:#64748b;
+margin-bottom:25px
+}
+
+.field{
+margin-bottom:15px
+}
+
+.field label{
+display:block;
+font-size:13px;
+font-weight:bold;
+margin-bottom:6px
+}
+
+.field input,
+.field select,
+.field textarea{
+width:100%;
+padding:12px;
+border:1px solid #cbd5e1;
+border-radius:10px;
+outline:none
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus{
+border-color:#2563eb;
+box-shadow:0 0 0 3px #2563eb18
+}
+
+.btn{
+border:0;
+padding:11px 15px;
+border-radius:10px;
+font-weight:bold;
+cursor:pointer
+}
+
+.blue{background:#2563eb;color:white}
+.green{background:#16a34a;color:white}
+.red{background:#dc2626;color:white}
+.gray{background:#e2e8f0;color:#334155}
+.yellow{background:#f59e0b;color:white}
+
+.login-btn{
+width:100%;
+padding:14px;
+border:0;
+border-radius:11px;
+background:#2563eb;
+color:white;
+font-weight:bold;
+font-size:15px
+}
+
+#app{display:none}
+
+.sidebar{
+position:fixed;
+left:0;
+top:0;
+bottom:0;
+width:245px;
+background:#102a5c;
+color:white;
+padding:18px;
+z-index:50
+}
+
+.brand{
+display:flex;
+align-items:center;
+gap:10px;
+padding-bottom:20px;
+border-bottom:1px solid #ffffff25
+}
+
+.brand-icon{
+width:45px;
+height:45px;
+background:white;
+color:#1d4ed8;
+border-radius:12px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:23px
+}
+
+.brand-title{
+font-size:14px;
+font-weight:bold
+}
+
+.brand-sub{
+font-size:10px;
+opacity:.7
+}
+
+.nav{
+margin-top:20px
+}
+
+.nav button{
+width:100%;
+border:0;
+background:transparent;
+color:#dbeafe;
+text-align:left;
+padding:12px;
+border-radius:9px;
+margin-bottom:5px
+}
+
+.nav button:hover,
+.nav button.active{
+background:#2563eb;
+color:white
+}
+
+.logout{
+position:absolute;
+bottom:20px;
+left:18px;
+right:18px;
+background:#dc2626!important
+}
+
+.main{
+margin-left:245px;
+padding:22px
+}
+
+.topbar{
+background:white;
+border-radius:15px;
+padding:17px 20px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+box-shadow:0 3px 15px #00000008
+}
+
+.page-title{
+font-size:22px;
+font-weight:bold
+}
+
+.page-subtitle{
+font-size:12px;
+color:#64748b;
+margin-top:4px
+}
+
+.user{
+text-align:right
+}
+
+.user b{display:block}
+.user small{color:#64748b}
+
+.page{display:none}
+.page.active{display:block}
+
+.welcome{
+background:linear-gradient(135deg,#1e3a8a,#2563eb);
+color:white;
+border-radius:17px;
+padding:24px;
+margin-bottom:20px
+}
+
+.welcome h2{
+margin:0 0 7px
+}
+
+.welcome p{
+margin:0;
+opacity:.85
+}
+
+.dashboard{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+gap:17px
+}
+
+.card{
+background:white;
+padding:23px;
+border-radius:17px;
+border:1px solid #e2e8f0;
+box-shadow:0 4px 14px #00000008;
+transition:.2s;
+cursor:pointer
+}
+
+.card:hover{
+transform:translateY(-4px);
+box-shadow:0 12px 25px #0002
+}
+
+.card-icon{
+font-size:35px;
+margin-bottom:12px
+}
+
+.card-title{
+font-weight:bold
+}
+
+.card-text{
+font-size:12px;
+color:#64748b;
+margin-top:5px
+}
+
+.toolbar{
+background:white;
+padding:15px;
+border-radius:14px;
+display:flex;
+gap:9px;
+flex-wrap:wrap;
+align-items:center;
+margin-bottom:17px
+}
+
+.search{
+padding:11px;
+border:1px solid #cbd5e1;
+border-radius:9px;
+min-width:240px;
+outline:none
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+gap:16px
+}
+
+.room,
+.class-card,
+.item-card{
+background:white;
+padding:20px;
+border-radius:16px;
+border:1px solid #e2e8f0;
+transition:.2s;
+position:relative
+}
+
+.room:hover,
+.class-card:hover,
+.item-card:hover{
+transform:translateY(-3px);
+box-shadow:0 10px 25px #0001
+}
+
+.clickable{
+cursor:pointer
+}
+
+.icon{
+font-size:38px;
+margin-bottom:10px
+}
+
+.name{
+font-weight:bold;
+font-size:17px
+}
+
+.info{
+font-size:12px;
+color:#64748b;
+line-height:1.7;
+margin-top:7px
+}
+
+.actions{
+display:flex;
+gap:6px;
+margin-top:14px;
+flex-wrap:wrap
+}
+
+.item-card .photo-link{
+margin-top:12px;
+color:#2563eb;
+font-weight:bold;
+font-size:12px
+}
+
+.table-box{
+background:white;
+border-radius:15px;
+overflow:auto
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+min-width:750px
+}
+
+th{
+background:#102a5c;
+color:white;
+padding:12px;
+text-align:left;
+font-size:12px
+}
+
+td{
+padding:11px;
+border-bottom:1px solid #e2e8f0;
+font-size:12px
+}
+
+tr:hover td{
+background:#f8fafc
+}
+
+.modal{
+display:none;
+position:fixed;
+inset:0;
+background:#0f172aaa;
+z-index:100;
+align-items:center;
+justify-content:center;
+padding:15px
+}
+
+.modal.show{display:flex}
+
+.modal-box{
+background:white;
+width:100%;
+max-width:850px;
+max-height:92vh;
+overflow:auto;
+border-radius:18px
+}
+
+.modal-head{
+padding:17px 20px;
+border-bottom:1px solid #e2e8f0;
+display:flex;
+justify-content:space-between;
+align-items:center
+}
+
+.modal-head h2{
+margin:0;
+font-size:19px
+}
+
+.close{
+width:35px;
+height:35px;
+border:0;
+border-radius:9px;
+background:#f1f5f9
+}
+
+.modal-body{
+padding:20px
+}
+
+.form-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:13px
+}
+
+.full{
+grid-column:1/-1
+}
+
+.doc-grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+gap:14px
+}
+
+.doc{
+border:1px solid #e2e8f0;
+border-radius:13px;
+overflow:hidden;
+background:white
+}
+
+.doc img{
+display:block;
+width:100%;
+height:170px;
+object-fit:cover;
+background:#e2e8f0
+}
+
+.doc-body{
+padding:10px
+}
+
+.doc-body p{
+font-size:12px;
+color:#64748b;
+min-height:35px
+}
+
+.upload{
+border:2px dashed #cbd5e1;
+padding:20px;
+border-radius:13px;
+text-align:center;
+margin-bottom:20px
+}
+
+.preview img{
+max-width:220px;
+max-height:180px;
+border-radius:10px;
+margin-top:10px
+}
+
+.loading{
+position:fixed;
+inset:0;
+background:#0f172a88;
+z-index:1000;
+display:none;
+align-items:center;
+justify-content:center
+}
+
+.loading.show{display:flex}
+
+.loading-box{
+background:white;
+padding:25px 35px;
+border-radius:17px;
+text-align:center;
+box-shadow:0 20px 50px #0003
+}
+
+.spinner{
+width:38px;
+height:38px;
+border:4px solid #dbeafe;
+border-top-color:#2563eb;
+border-radius:50%;
+animation:spin .8s linear infinite;
+margin:0 auto 12px
+}
+
+@keyframes spin{
+to{transform:rotate(360deg)}
+}
+
+.empty{
+background:white;
+padding:30px;
+border-radius:15px;
+text-align:center;
+color:#64748b
+}
+
+/* =====================================================
+   FORM TAMBAH DATA - MINIMALIS / COMPACT
+   Versi diperbarui: form dibuat pendek agar tidak
+   perlu scroll panjang pada layar komputer.
+===================================================== */
+
+#formModal{
+  padding:10px;
+}
+
+#formModal .modal-box{
+  width:min(780px,100%);
+  max-width:780px;
+  max-height:90vh;
+  overflow:hidden;
+  border-radius:16px;
+}
+
+#formModal .modal-head{
+  padding:12px 16px;
+  min-height:50px;
+}
+
+#formModal .modal-head h2{
+  font-size:17px;
+}
+
+#formModal .modal-body{
+  padding:14px 16px 15px;
+  max-height:calc(90vh - 50px);
+  overflow-y:auto;
+}
+
+#formModal .form-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px 10px;
+}
+
+#formModal .field{
+  margin-bottom:0;
+  min-width:0;
+}
+
+#formModal .field label{
+  display:block;
+  font-size:11px;
+  line-height:1.2;
+  margin-bottom:3px;
+  color:#475569;
+}
+
+#formModal .field input,
+#formModal .field select,
+#formModal .field textarea{
+  width:100%;
+  min-height:34px;
+  padding:7px 9px;
+  font-size:12px;
+  border-radius:8px;
+}
+
+#formModal .field textarea{
+  min-height:50px;
+  max-height:90px;
+  resize:vertical;
+}
+
+#formModal .full{
+  grid-column:1/-1;
+}
+
+#formModal .modal-body > br{
+  display:none;
+}
+
+#formModal .modal-body > .btn{
+  display:block;
+  margin:11px 0 0 auto;
+  padding:9px 15px;
+  font-size:12px;
+  border-radius:8px;
+}
+
+#formModal .modal-body > .btn:hover{
+  filter:brightness(.96);
+}
+
+/* Form transaksi dan peminjaman juga dibuat compact */
+#formModal .form-grid + br + .btn{
+  margin-top:10px;
+}
+
+@media(max-width:800px){
+
+#formModal{
+  padding:8px;
+}
+
+#formModal .modal-box{
+  max-height:94vh;
+}
+
+#formModal .modal-body{
+  max-height:calc(94vh - 50px);
+  padding:12px;
+}
+
+#formModal .form-grid{
+  grid-template-columns:1fr 1fr;
+  gap:7px 8px;
+}
+
+}
+
+@media(max-width:480px){
+
+#formModal .form-grid{
+  grid-template-columns:1fr;
+}
+
+#formModal .full{
+  grid-column:auto;
+}
+
+#formModal .modal-head{
+  padding:10px 12px;
+}
+
+#formModal .modal-body{
+  padding:10px 12px 12px;
+}
+
+#formModal .modal-body > .btn{
+  width:100%;
+}
+
+}
+
+@media(min-width:801px) and (max-height:700px){
+
+#formModal .modal-box{
+  max-height:94vh;
+}
+
+#formModal .modal-body{
+  max-height:calc(94vh - 50px);
+  padding:10px 14px 12px;
+}
+
+#formModal .form-grid{
+  gap:5px 9px;
+}
+
+#formModal .field label{
+  font-size:10px;
+  margin-bottom:2px;
+}
+
+#formModal .field input,
+#formModal .field select,
+#formModal .field textarea{
+  min-height:31px;
+  padding:6px 8px;
+  font-size:11px;
+}
+
+#formModal .field textarea{
+  min-height:42px;
+}
+
+}
+
+@media(max-width:800px){
+
+.login-box{
+grid-template-columns:1fr
+}
+
+.login-left{
+display:none
+}
+
+.sidebar{
+width:65px;
+padding:10px
+}
+
+.brand-title,
+.brand-sub,
+.nav span{
+display:none
+}
+
+.brand-icon{
+margin:auto
+}
+
+.nav button{
+text-align:center;
+font-size:20px
+}
+
+.logout{
+left:8px;
+right:8px
+}
+
+.main{
+margin-left:65px;
+padding:12px
+}
+
+.form-grid{
+grid-template-columns:1fr
+}
+
+.full{
+grid-column:auto
+}
+
+.topbar{
+padding:14px
+}
+
+.user{
+display:none
+}
+
+}
+
+
+/* =====================================================
+   CETAK LAPORAN - TANDA TANGAN V2
+   Footer ditempatkan benar-benar di bagian bawah kertas.
+===================================================== */
+.print-footer{
+  display:none;
+}
+
+@media print{
+  @page{
+    size:A4 landscape;
+    margin:10mm;
+  }
+
+  html,body{
+    margin:0 !important;
+    padding:0 !important;
+    width:100% !important;
+    background:#fff !important;
+    color:#000 !important;
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
+  }
+
+  body > *:not(#app){
+    display:none !important;
+  }
+
+  #app{
+    display:block !important;
+    width:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+    background:#fff !important;
+  }
+
+  #app > .sidebar,
+  #app > .main > .topbar,
+  .toolbar,
+  .btn,
+  button,
+  input,
+  select,
+  textarea{
+    display:none !important;
+  }
+
+  .main{
+    margin:0 !important;
+    padding:0 !important;
+    width:100% !important;
+  }
+
+  .page{
+    display:none !important;
+  }
+
+  .page.active{
+    display:block !important;
+    position:static !important;
+    width:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+
+  #dashboard,
+  #prasarana,
+  #kelasPage,
+  #sarana,
+  #transaksi,
+  #peminjaman{
+    display:none !important;
+  }
+
+  /* CETAK HANYA LAPORAN YANG SEDANG DIBUKA.
+     Laporan lain tetap disembunyikan agar tidak ikut tercetak. */
+  #laporanPrasarana,
+  #laporan,
+  #laporanTransaksi{
+    display:none !important;
+    width:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+
+  #laporanPrasarana.active,
+  #laporan.active,
+  #laporanTransaksi.active{
+    display:block !important;
+    width:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+
+  #laporanPrasaranaContent,
+  #laporanContent,
+  #laporanTransaksiContent{
+    width:100% !important;
+    margin:0 !important;
+    padding:0 0 38mm 0 !important;
+  }
+
+  .table-box{
+    width:100% !important;
+    margin:0 0 8mm 0 !important;
+    padding:0 !important;
+    border:1px solid #555 !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    overflow:visible !important;
+    page-break-inside:auto !important;
+    break-inside:auto !important;
+  }
+
+  table{
+    width:100% !important;
+    border-collapse:separate !important;
+    border-spacing:0 !important;
+    border:1px solid #555 !important;
+    font-size:9.5px !important;
+    page-break-inside:auto !important;
+    break-inside:auto !important;
+  }
+
+  thead{
+    display:table-header-group !important;
+  }
+
+  tfoot{
+    display:table-footer-group !important;
+  }
+
+  tr{
+    page-break-inside:avoid !important;
+    break-inside:avoid !important;
+  }
+
+  tbody tr:last-child{
+    page-break-after:auto !important;
+  }
+
+  th,td{
+    border:0 !important;
+    border-right:1px solid #555 !important;
+    border-bottom:1px solid #555 !important;
+    padding:4px 5px !important;
+    color:#000 !important;
+    background:#fff !important;
+    vertical-align:middle !important;
+  }
+
+  th:last-child,td:last-child{border-right:0 !important;}
+  tbody tr:last-child td{border-bottom:0 !important;}
+  thead th{border-bottom:1px solid #555 !important;}
+
+  #laporanPrasaranaContent h2{
+    font-size:14px !important;
+    margin:0 !important;
+    padding:7px 8px 2px !important;
+  }
+
+  #laporanPrasaranaContent p{
+    font-size:9.5px !important;
+    margin:0 8px 6px !important;
+  }
+
+  /* FOOTER TANDA TANGAN:
+     Untuk laporan keseluruhan tidak lagi fixed agar tidak muncul
+     berulang pada setiap lembar. Tanda tangan dibuat satu kali
+     di bagian paling akhir laporan. */
+  #laporan .print-footer{
+    display:none !important;
+  }
+
+  #laporanPrasarana .print-footer,
+  #laporanTransaksi .print-footer{
+    display:block !important;
+    position:fixed !important;
+    top:auto !important;
+    right:0 !important;
+    bottom:0 !important;
+    left:0 !important;
+    width:100% !important;
+    height:30mm !important;
+    margin:0 !important;
+    padding:0 2mm 1mm 2mm !important;
+    background:#fff !important;
+    color:#000 !important;
+    z-index:999999 !important;
+    font-family:Arial,Helvetica,sans-serif !important;
+    font-size:10px !important;
+    line-height:1.2 !important;
+    box-sizing:border-box !important;
+    overflow:hidden !important;
+  }
+
+  .print-footer .print-date{
+    width:100% !important;
+    text-align:right !important;
+    font-weight:bold !important;
+    margin:0 0 4mm 0 !important;
+    padding:0 2mm 0 0 !important;
+    height:4mm !important;
+    box-sizing:border-box !important;
+  }
+
+  .print-footer .signature-grid{
+    display:grid !important;
+    grid-template-columns:1fr 1fr 1fr !important;
+    column-gap:12mm !important;
+    width:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+    text-align:left !important;
+    box-sizing:border-box !important;
+  }
+
+  .print-footer .signature-col{
+    min-width:0 !important;
+    margin:0 !important;
+    padding:0 !important;
+    line-height:1.25 !important;
+    text-align:left !important;
+  }
+
+  .print-footer .signature-title{
+    height:7mm !important;
+    min-height:7mm !important;
+    margin:0 !important;
+    padding:0 !important;
+    font-size:10px !important;
+  }
+
+  .print-footer .signature-space{
+    height:12mm !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+
+  .print-footer .signature-name,
+  .print-footer .signature-placeholder{
+    margin:0 !important;
+    padding:0 !important;
+    font-weight:bold !important;
+    font-size:10px !important;
+    white-space:nowrap !important;
+  }
+
+  /* Jangan biarkan isi tabel masuk ke area tanda tangan. */
+  #laporanContent{
+    padding-bottom:0 !important;
+  }
+
+  /* Tanda tangan hanya sekali di AKHIR setiap prasarana.
+     Jika tabel prasarana memanjang ke 2+ lembar, tanda tangan
+     otomatis berada setelah baris terakhir, bukan sebagai footer tetap. */
+  .report-room-signature{
+    /* Biarkan tanda tangan mengalir setelah tabel. Jangan dipaksa
+       pindah sebagai satu blok ke halaman baru. */
+    page-break-before:auto !important;
+    break-before:auto !important;
+    page-break-inside:auto !important;
+    break-inside:auto !important;
+    margin-top:4mm !important;
+    padding-top:1mm !important;
+  }
+  .report-sign-date{
+    text-align:right !important;
+    margin:0 0 3mm 0 !important;
+    font-size:9px !important;
+    font-weight:bold !important;
+  }
+  .report-sign-grid{
+    display:grid !important;
+    grid-template-columns:1fr 1fr 1fr !important;
+    column-gap:12mm !important;
+    width:100% !important;
+    text-align:left !important;
+    page-break-inside:auto !important;
+    break-inside:auto !important;
+  }
+  .report-sign-col{
+    min-width:0 !important;
+    font-size:10px !important;
+    line-height:1.25 !important;
+    page-break-inside:auto !important;
+    break-inside:auto !important;
+  }
+  .report-sign-title{
+    height:5mm !important;
+  }
+  .report-sign-space{
+    height:10mm !important;
+  }
+  .report-sign-name{
+    font-weight:bold !important;
+    white-space:nowrap !important;
+  }
+  .solid-line{
+    display:inline-block !important;
+    height:3mm !important;
+    border-bottom:1px solid #000 !important;
+    vertical-align:bottom !important;
+  }
+  .date-line{width:42mm !important;}
+  .room-line{width:38mm !important;}
+
+  /* Laporan keseluruhan: gunakan ruang halaman sampai mendekati bawah.
+     Tanda tangan tetap mengalir tepat setelah tabel; bila tidak cukup,
+     browser melanjutkannya ke halaman berikutnya, bukan membuat halaman kosong. */
+  #laporanContent{
+    padding-bottom:0 !important;
+  }
+  #laporanContent .report-room-page{
+    margin-bottom:0 !important;
+  }
+  #laporanContent .report-room-signature{
+    margin-top:4mm !important;
+    padding-top:0 !important;
+  }
+
+  #laporanPrasaranaContent,
+  #laporanTransaksiContent{
+    padding-bottom:38mm !important;
+  }
+
+  /* Judul laporan tidak perlu ruang besar ketika dicetak. */
+  #laporanContent > h1,
+  #laporanPrasaranaContent > h1,
+  #laporanTransaksiContent > h1{
+    margin:0 0 4mm !important;
+    font-size:16px !important;
+  }
+}
+
+/* =====================================================
+   QR CODE SCANNER & QR BARANG
+===================================================== */
+#qr-reader.qr-reader-native{
+  position:relative;
+  width:100%;
+  max-width:620px;
+  margin:0 auto;
+  min-height:320px;
+  background:#0f172a;
+  border-radius:16px;
+  overflow:hidden;
+}
+#qrVideo{width:100%;height:auto;min-height:320px;display:block;object-fit:cover;background:#020617;}
+.qr-frame{position:absolute;left:50%;top:50%;width:240px;height:240px;transform:translate(-50%,-50%);border:3px solid #fff;border-radius:18px;box-shadow:0 0 0 9999px rgba(0,0,0,.28);pointer-events:none;}
+.qr-frame:after{content:'Arahkan QR ke sini';position:absolute;left:50%;bottom:-38px;transform:translateX(-50%);white-space:nowrap;color:#fff;font-weight:bold;font-size:13px;text-shadow:0 1px 3px #000;}
+.qr-mobile-tools{display:flex;justify-content:center;gap:8px;margin-top:10px;}
+.qr-toolbar{
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.qr-box{
+  background:white;
+  border:1px solid #e2e8f0;
+  border-radius:16px;
+  padding:18px;
+  box-shadow:0 4px 14px #00000008;
+}
+#qr-reader{
+  width:100%;
+  max-width:520px;
+  margin:0 auto;
+}
+#qr-reader video{
+  border-radius:12px;
+}
+.qr-result{
+  margin-top:16px;
+  padding:16px;
+  border-radius:13px;
+  background:#eff6ff;
+  border:1px solid #bfdbfe;
+}
+.qr-code-wrap{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:230px;
+  padding:15px;
+  background:#fff;
+  border-radius:12px;
+  border:1px solid #e2e8f0;
+}
+.qr-code-wrap canvas,.qr-code-wrap img{max-width:100%;height:auto;}
+.qr-print-area{text-align:center;padding:20px;background:#fff;}
+.qr-print-area h2{margin:0 0 6px;}
+.qr-print-area p{margin:4px 0;color:#475569;font-size:13px;}
+@media print{
+  body.qr-printing *{visibility:hidden!important;}
+  body.qr-printing #qrPrintArea,
+  body.qr-printing #qrPrintArea *{visibility:visible!important;}
+  body.qr-printing #qrPrintArea{
+    position:absolute!important;left:0;top:0;width:100%;
+  }
+}
+
+
+@media print{
+  .laporan-filter{display:none !important;}
+}
+
+/* Laporan per prasarana */
+.report-room-page{background:#fff;border:1px solid #e2e8f0;border-radius:15px;padding:18px;margin-bottom:18px;}
+.report-room-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px solid #e2e8f0;padding-bottom:10px;margin-bottom:12px;}
+.report-room-head h1{margin:0;font-size:18px;}
+.report-room-head p{margin:3px 0 0;color:#64748b;font-size:11px;}
+.report-room-detail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:12px;}
+.report-room-detail>div{border:1px solid #e2e8f0;border-radius:8px;padding:7px;font-size:11px;background:#f8fafc;}
+.report-room-detail b{display:block;margin-bottom:2px;color:#475569;}
+.report-room-section-title{margin:10px 0 6px;font-size:13px;font-weight:bold;}
+@media print{
+  .report-room-page{border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;margin:0!important;page-break-inside:auto!important;break-inside:auto!important;}
+  .report-room-page + .report-room-page{page-break-before:always!important;break-before:page!important;}
+  /* Ringkas bagian identitas prasarana agar tabel sarana mendapat lebih banyak ruang. */
+  .report-room-head{gap:8px!important;padding-bottom:6px!important;margin-bottom:7px!important;}
+  .report-room-head h1{font-size:14px!important;}
+  .report-room-head p{font-size:9px!important;margin:2px 0 0!important;}
+  .report-room-detail{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:4px!important;margin-bottom:7px!important;}
+  .report-room-detail>div{border:1px solid #555!important;border-radius:4px!important;padding:4px 5px!important;font-size:9px!important;line-height:1.15!important;background:#fff!important;min-height:0!important;}
+  .report-room-detail b{margin-bottom:1px!important;font-size:8.5px!important;}
+  .report-room-section-title{margin:6px 0 4px!important;font-size:11px!important;}
+  .report-room-page .table-box{
+    page-break-inside:auto!important;
+    break-inside:auto!important;
+    border:1px solid #555!important;
+    box-decoration-break:clone!important;
+    -webkit-box-decoration-break:clone!important;
+    overflow:visible!important;
+  }
+  .report-room-page table{
+    page-break-inside:auto!important;
+    break-inside:auto!important;
+    border:1px solid #555!important;
+    border-collapse:separate!important;
+    border-spacing:0!important;
+    width:100%!important;
+  }
+  .report-room-page thead th{border-bottom:1px solid #555!important;}
+  .report-room-page tbody tr{page-break-inside:avoid!important;break-inside:avoid!important;}
+  .report-room-page td,.report-room-page th{
+    page-break-inside:avoid!important;
+    break-inside:avoid!important;
+    border:0!important;
+    border-right:1px solid #555!important;
+    border-bottom:1px solid #555!important;
+  }
+  .report-room-page td:last-child,.report-room-page th:last-child{border-right:0!important;}
+  .report-room-page tbody tr:last-child td{border-bottom:0!important;}
+  /* Tanda tangan mengikuti akhir tabel dan tidak dibuat menjadi halaman tersendiri. */
+  .report-room-signature{page-break-before:auto!important;break-before:auto!important;page-break-inside:auto!important;break-inside:auto!important;}
+  .report-sign-date{page-break-after:avoid!important;break-after:avoid!important;}
+  .report-sign-grid{page-break-inside:auto!important;break-inside:auto!important;}
+  .report-sign-col{page-break-inside:avoid!important;break-inside:avoid!important;}
+  
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+
+<body class="login-mode">
+
+<!-- LOGIN -->
+
+<div id="loginPage">
+
+<div class="login-box">
+
+<div class="login-left">
+
+<div class="logo">🏫</div>
+
+<h1>SMK SRI LANGKAT</h1>
+
+<p>
+Sistem Informasi Inventaris Sekolah
+</p>
+
+<p>
+📦 Sarana<br>
+🏫 Prasarana<br>
+📷 Dokumentasi<br>
+📊 Laporan
+</p>
+
+</div>
+
+<div class="login-right">
+
+<h2>Selamat Datang</h2>
+
+<div class="sub">
+Silakan masuk ke sistem inventaris.
+</div>
+
+<div class="field">
+
+<label>Username</label>
+
+<input
+id="username"
+placeholder="Username"
+autocomplete="username">
+
+</div>
+
+<div class="field">
+
+<label>Password</label>
+
+<input
+id="password"
+type="password"
+placeholder="Password"
+autocomplete="current-password">
+
+</div>
+
+<button
+class="login-btn"
+onclick="login()">
+
+🔐 Masuk
+
+</button>
+
+<div
+id="loginMsg"
+style="color:#dc2626;text-align:center;margin-top:12px;font-size:13px">
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- APP -->
+
+<div id="app">
+
+<aside class="sidebar">
+
+<div class="brand">
+
+<div class="brand-icon">🏫</div>
+
+<div>
+<div class="brand-title">SMK SRI LANGKAT</div>
+<div class="brand-sub">INVENTARIS SEKOLAH</div>
+</div>
+
+</div>
+
+<div class="nav">
+
+<button class="active"
+onclick="showPage('dashboard',this)">
+📊 <span>Dashboard</span>
+</button>
+
+<button
+onclick="showPage('prasarana',this)">
+🏫 <span>Data Prasarana</span>
+</button>
+
+<button
+onclick="showPage('sarana',this)">
+📦 <span>Data Sarana</span>
+</button>
+
+<button
+onclick="showPage('scanQr',this)">
+📷 <span>Scan QR</span>
+</button>
+
+<button
+onclick="showPage('transaksi',this)">
+🔄 <span>Transaksi</span>
+</button>
+
+<button
+onclick="showPage('peminjaman',this)">
+📋 <span>Peminjaman</span>
+</button>
+
+<button
+onclick="showPage('laporanPrasarana',this)">
+📄 <span>Laporan Prasarana</span>
+</button>
+
+<button
+onclick="showPage('laporan',this)">
+📊 <span>Laporan Keseluruhan</span>
+</button>
+
+</div>
+
+<button
+class="nav button logout"
+onclick="logout()">
+🚪 <span>Keluar</span>
+</button>
+
+</aside>
+
+
+<main class="main">
+
+<div class="topbar">
+
+<div>
+
+<div id="pageTitle" class="page-title">
+Dashboard
+</div>
+
+<div id="pageSubtitle" class="page-subtitle">
+Sistem Inventaris SMK Sri Langkat
+</div>
+
+</div>
+
+<div class="user">
+
+<b id="userName">Administrator</b>
+
+<small id="userRole">Admin</small>
+
+</div>
+
+</div>
+
+
+<!-- DASHBOARD -->
+
+<section
+id="dashboard"
+class="page active">
+
+<div class="welcome">
+
+<h2>Selamat Datang 👋</h2>
+
+<p>
+Kelola inventaris sarana dan prasarana sekolah dengan mudah.
+</p>
+
+</div>
+
+<div class="dashboard">
+
+<div class="card"
+onclick="showPageById('prasarana')">
+
+<div class="card-icon">🏫</div>
+
+<div class="card-title">
+Data Prasarana
+</div>
+
+<div class="card-text">
+Kelola ruangan dan kelas sekolah
+</div>
+
+</div>
+
+<div class="card"
+onclick="showPageById('sarana')">
+
+<div class="card-icon">📦</div>
+
+<div class="card-title">
+Data Sarana
+</div>
+
+<div class="card-text">
+Kelola barang inventaris
+</div>
+
+</div>
+
+<div class="card" onclick="showPageById('scanQr')">
+<div class="card-icon">📷</div>
+<div class="card-title">Scan QR Barang</div>
+<div class="card-text">Scan QR untuk mencari dan membuka data barang</div>
+</div>
+
+<div class="card"
+onclick="showPageById('transaksi')">
+
+<div class="card-icon">🔄</div>
+
+<div class="card-title">
+Barang Masuk / Keluar
+</div>
+
+<div class="card-text">
+Catat transaksi inventaris
+</div>
+
+</div>
+
+<div class="card"
+onclick="showPageById('peminjaman')">
+
+<div class="card-icon">📋</div>
+
+<div class="card-title">
+Peminjaman
+</div>
+
+<div class="card-text">
+Kelola peminjaman barang
+</div>
+
+</div>
+
+<div class="card"
+onclick="showPageById('laporanPrasarana')">
+
+<div class="card-icon">📄</div>
+
+<div class="card-title">
+Laporan Prasarana
+</div>
+
+<div class="card-text">
+Laporan ruangan dan kelas
+</div>
+
+</div>
+
+<div class="card"
+onclick="showPageById('laporan')">
+
+<div class="card-icon">📊</div>
+
+<div class="card-title">
+Laporan Keseluruhan
+</div>
+
+<div class="card-text">
+Ringkasan inventaris
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- SCAN QR -->
+<section id="scanQr" class="page">
+
+<div class="toolbar qr-toolbar">
+  <button class="btn blue" onclick="startQrScanner()">📷 Mulai Scan</button>
+  <button class="btn gray" onclick="stopQrScanner()">⏹ Berhenti</button>
+  <button class="btn yellow" onclick="document.getElementById('qrManual').focus()">⌨️ Input Manual</button>
+  <input id="qrManual" class="search" placeholder="Masukkan ID Prasarana / ID / Kode Barang..." onkeydown="if(event.key==='Enter')searchQrManual()">
+  <button class="btn green" onclick="searchQrManual()">🔎 Cari</button>
+</div>
+
+<div class="welcome">
+  <h2>📷 Scan QR Code Barang</h2>
+  <p>Arahkan kamera ke QR Code pada barang. Sistem akan mencari data barang secara otomatis.</p>
+</div>
+
+<div class="qr-box">
+  <div id="qr-reader" class="qr-reader-native">
+    <video id="qrVideo" playsinline autoplay muted></video>
+    <canvas id="qrCanvas" style="display:none"></canvas>
+    <div class="qr-frame"></div>
+  </div>
+  <div class="qr-mobile-tools" style="flex-wrap:wrap;gap:8px">
+    <button type="button" class="btn green" onclick="startQrScanner()">📷 Scan dengan Kamera</button>
+    <label class="btn gray" for="qrImageInput">🖼️ Pilih Foto QR</label>
+    <input id="qrImageInput" type="file" accept="image/*" style="display:none" onchange="scanQrImage(this)">
+  </div>
+  <div style="text-align:center;margin-top:7px;font-size:12px;color:#64748b">
+    HP: gunakan kamera atau pilih foto. Laptop/PC: gunakan webcam atau pilih file gambar QR.
+  </div>
+  <div id="qrScanStatus" class="empty" style="margin-top:12px">Kamera belum dijalankan.</div>
+  <div id="qrResult" class="qr-result" style="display:none"></div>
+</div>
+
+</section>
+
+<!-- PRASARANA -->
+
+<section id="prasarana" class="page">
+
+<div class="toolbar">
+
+<button class="btn blue"
+onclick="openRoomForm()">
+➕ Tambah Prasarana
+</button>
+
+<input
+id="searchRoom"
+class="search"
+placeholder="🔍 Cari prasarana..."
+oninput="renderRooms()">
+
+</div>
+
+<div id="roomGrid" class="grid"></div>
+
+</section>
+
+
+<!-- KELAS -->
+
+<section id="kelasPage" class="page">
+
+<div class="toolbar">
+
+<button class="btn gray"
+onclick="showPageById('prasarana')">
+← Kembali
+</button>
+
+<button class="btn blue"
+onclick="openKelasForm()">
+➕ Tambah Ruang Kelas
+</button>
+
+<input
+id="searchKelas"
+class="search"
+placeholder="🔍 Cari kelas..."
+oninput="renderKelas()">
+
+</div>
+
+<div class="welcome">
+
+<h2>📚 Ruang Belajar Murid</h2>
+
+<p>
+Pilih kelas untuk melihat sarana dan dokumentasi kelas tersebut.
+</p>
+
+</div>
+
+<div id="kelasGrid" class="grid"></div>
+
+</section>
+
+
+<!-- SARANA -->
+
+<section id="sarana" class="page">
+
+<div class="toolbar">
+
+<button class="btn gray"
+onclick="backFromSarana()">
+← Kembali
+</button>
+
+<button class="btn blue"
+onclick="openBarangForm()">
+➕ Tambah Sarana
+</button>
+
+<input
+id="searchSarana"
+class="search"
+placeholder="🔍 Cari sarana..."
+oninput="renderSarana()">
+
+</div>
+
+<div class="welcome">
+
+<h2 id="saranaTitle">📦 Data Sarana</h2>
+
+<p id="saranaSubtitle">
+Sarana pada ruangan/kelas.
+</p>
+
+</div>
+
+<div id="saranaGrid" class="grid"></div>
+
+</section>
+
+
+<!-- TRANSAKSI -->
+
+<section id="transaksi" class="page">
+
+<div class="toolbar">
+
+<button class="btn blue"
+onclick="openTransaksiForm()">
+➕ Catat Transaksi
+</button>
+
+<button class="btn green"
+onclick="showPageById('laporanTransaksi')">
+🖨️ Cetak Laporan Transaksi
+</button>
+
+</div>
+
+<div class="table-box">
+
+<table>
+
+<thead>
+<tr>
+<th>ID</th>
+<th>Tanggal</th>
+<th>Jenis</th>
+<th>Barang</th>
+<th>Jumlah</th>
+<th>Harga</th>
+<th>Keterangan</th>
+<th>Aksi</th>
+</tr>
+</thead>
+
+<tbody id="transaksiTable"></tbody>
+
+</table>
+
+</div>
+
+</section>
+
+
+<!-- LAPORAN TRANSAKSI -->
+<section id="laporanTransaksi" class="page">
+
+<div class="toolbar">
+
+<button class="btn blue"
+onclick="window.print()">
+🖨️ Cetak Laporan Transaksi
+</button>
+
+<button class="btn"
+onclick="showPageById('transaksi')">
+↩️ Kembali ke Transaksi
+</button>
+
+</div>
+
+<div id="laporanTransaksiContent"></div>
+
+</section>
+
+
+<!-- PEMINJAMAN -->
+
+<section id="peminjaman" class="page">
+
+<div class="toolbar">
+
+<button class="btn blue"
+onclick="openPeminjamanForm()">
+➕ Tambah Peminjaman
+</button>
+
+</div>
+
+<div class="table-box">
+
+<table>
+
+<thead>
+<tr>
+<th>ID</th>
+<th>Tanggal</th>
+<th>Peminjam</th>
+<th>Barang</th>
+<th>Jumlah</th>
+<th>Status</th>
+<th>Aksi</th>
+</tr>
+</thead>
+
+<tbody id="peminjamanTable"></tbody>
+
+</table>
+
+</div>
+
+</section>
+
+
+<!-- LAPORAN PRASARANA -->
+
+<section id="laporanPrasarana" class="page">
+
+<div class="toolbar">
+
+<button class="btn blue"
+onclick="window.print()">
+🖨️ Cetak
+</button>
+
+</div>
+
+<div id="laporanPrasaranaContent"></div>
+
+
+<!-- FOOTER TANDA TANGAN CETAK -->
+<div class="print-footer" aria-hidden="true">
+  <div class="print-date">Tanjung Pura, ................................</div>
+
+  <div class="signature-grid">
+
+    <div class="signature-col">
+      <div class="signature-title">
+        <b>Mengetahui:</b><br>
+        Kepala Sekolah
+      </div>
+      <div class="signature-space"></div>
+      <div class="signature-name">SUGANDI SANJAYA, S.PD</div>
+    </div>
+
+    <div class="signature-col">
+      <div class="signature-title">
+        <b>Penj. Ruangan</b>
+      </div>
+      <div class="signature-space"></div>
+      <div class="signature-placeholder">( ................................ )</div>
+    </div>
+
+    <div class="signature-col">
+      <div class="signature-title">
+        <b>PKS Bid. Sarana dan Prasarana</b>
+      </div>
+      <div class="signature-space"></div>
+      <div class="signature-name">SUSANTI, S.PD</div>
+    </div>
+
+  </div>
+</div>
+
+</section>
+
+
+<!-- LAPORAN -->
+
+<section id="laporan" class="page">
+
+<div class="toolbar">
+
+<button class="btn blue"
+onclick="window.print()">
+🖨️ Cetak
+</button>
+
+</div>
+
+<div id="laporanContent"></div>
+
+
+
+
+</section>
+
+</main>
+
+</div>
+
+
+<!-- FORM MODAL -->
+
+<div id="formModal" class="modal">
+
+<div class="modal-box">
+
+<div class="modal-head">
+
+<h2 id="formTitle">Form</h2>
+
+<button class="close"
+onclick="closeForm()">✕</button>
+
+</div>
+
+<div id="formBody" class="modal-body"></div>
+
+</div>
+
+</div>
+
+
+<!-- DOKUMENTASI -->
+
+<div id="docModal" class="modal">
+
+<div class="modal-box">
+
+<div class="modal-head">
+
+<div>
+
+<h2>📷 Dokumentasi Sarana</h2>
+
+<div
+id="docBarang"
+style="font-weight:bold;margin-top:4px">
+-
+</div>
+
+<div
+id="docRoom"
+style="font-size:12px;color:#64748b">
+-
+</div>
+
+</div>
+
+<button class="close"
+onclick="closeDoc()">✕</button>
+
+</div>
+
+<div class="modal-body">
+
+<div class="upload">
+
+<h3>📸 Tambahkan Foto</h3>
+
+<p>
+Pilih foto sarana dari komputer/HP.
+</p>
+
+<input
+id="docFile"
+type="file"
+accept="image/*"
+onchange="previewImage(event)">
+
+<div
+id="preview"
+class="preview">
+</div>
+
+<textarea
+id="docNote"
+style="width:100%;margin-top:12px;min-height:70px;padding:10px;border:1px solid #cbd5e1;border-radius:9px"
+placeholder="Keterangan foto..."></textarea>
+
+<button
+class="btn blue"
+style="margin-top:12px"
+onclick="saveDoc()">
+💾 Simpan Dokumentasi
+</button>
+
+</div>
+
+<h3>📷 Dokumentasi Tersimpan</h3>
+
+<div id="docGrid" class="doc-grid"></div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- MODAL QR BARANG -->
+<div id="qrModal" class="modal">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-head">
+      <h2 id="qrModalTitle">🔳 QR Code</h2>
+      <button class="close" onclick="closeQrModal()">✕</button>
+    </div>
+    <div class="modal-body qr-print-area" id="qrPrintArea">
+      <h2 id="qrBarangName">-</h2>
+      <p id="qrBarangCode">-</p>
+      <div id="qrCodeCanvas" class="qr-code-wrap"></div>
+      <p id="qrModalHint">Scan QR ini untuk membuka data.</p>
+      <button class="btn blue" onclick="printBarangQR()">💾🖨️ Simpan & Cetak QR</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING -->
+
+<div id="loading" class="loading">
+
+<div class="loading-box">
+
+<div class="spinner"></div>
+
+<b id="loadingText">
+Menyimpan data...
+</b>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   GLOBAL
+===================================================== */
+
+let appData={
+barang:[],
+ruangan:[],
+kelas:[],
+transaksi:[],
+peminjaman:[],
+dokumentasi:[]
+};
+
+let currentUser=null;
+let currentRoom=null;
+let currentKelas=null;
+let currentSarana=null;
+
+let saranaContext={
+type:'',
+name:''
+};
+
+
+/* =====================================================
+   LOADING
+===================================================== */
+
+function showLoading(text='Menyimpan data...'){
+
+document.getElementById('loadingText')
+.textContent=text;
+
+document.getElementById('loading')
+.classList.add('show');
+
+}
+
+function hideLoading(){
+
+document.getElementById('loading')
+.classList.remove('show');
+
+}
+
+
+/* =====================================================
+   LOGIN
+===================================================== */
+
+function login(){
+
+const username=
+document.getElementById('username')
+.value.trim();
+
+const password=
+document.getElementById('password').value;
+
+const msg=
+document.getElementById('loginMsg');
+
+if(!username||!password){
+
+msg.textContent='Username dan password wajib diisi.';
+
+return;
+
+}
+
+msg.textContent='Memeriksa login...';
+
+google.script.run
+
+.withSuccessHandler(r=>{
+
+if(r.success){
+
+currentUser=r.user;
+
+document.getElementById('loginPage')
+.style.display='none';
+
+document.body.classList.remove('login-mode');
+document.body.classList.add('app-mode');
+
+document.getElementById('app')
+.style.display='block';
+
+document.getElementById('userName')
+.textContent=r.user.nama;
+
+document.getElementById('userRole')
+.textContent=r.user.role;
+
+loadData();
+
+}else{
+
+msg.textContent=r.message;
+
+}
+
+})
+
+.withFailureHandler(e=>{
+
+msg.textContent='Koneksi gagal.';
+
+console.error(e);
+
+})
+
+.checkLogin(username,password);
+
+}
+
+
+document.getElementById('password')
+.addEventListener('keypress',e=>{
+
+if(e.key==='Enter')login();
+
+});
+
+
+function logout(){
+
+if(confirm('Keluar dari sistem?')){
+document.body.classList.remove('app-mode');
+document.body.classList.add('login-mode');
+location.reload();
+}
+
+}
+
+
+/* =====================================================
+   LOAD
+===================================================== */
+
+function loadData(){
+
+showLoading('Memuat data...');
+
+google.script.run
+
+.withSuccessHandler(data=>{
+
+appData=data||{
+barang:[],
+ruangan:[],
+kelas:[],
+transaksi:[],
+peminjaman:[],
+dokumentasi:[]
+};
+
+hideLoading();
+
+renderRooms();
+renderKelas();
+renderSarana();
+renderTransaksi();
+renderPeminjaman();
+renderLaporan();
+renderLaporanTransaksi();
+
+})
+
+.withFailureHandler(e=>{
+
+hideLoading();
+
+alert('Gagal memuat data: '+e.message);
+
+})
+
+.getAllData();
+
+}
+
+
+/* =====================================================
+   PAGE
+===================================================== */
+
+function showPage(id,button){
+
+document.querySelectorAll('.page')
+.forEach(p=>p.classList.remove('active'));
+
+const page=document.getElementById(id);
+
+if(page)page.classList.add('active');
+
+document.querySelectorAll('.nav button')
+.forEach(b=>b.classList.remove('active'));
+
+if(button)button.classList.add('active');
+
+const titles={
+
+dashboard:[
+'Dashboard',
+'Sistem Inventaris SMK Sri Langkat'
+],
+
+prasarana:[
+'Data Prasarana',
+'Daftar prasarana sekolah'
+],
+
+kelasPage:[
+'Ruang Belajar Murid',
+'Daftar kelas sekolah'
+],
+
+sarana:[
+'Data Sarana',
+'Sarana berdasarkan ruangan/kelas'
+],
+
+scanQr:[
+'Scan QR Barang',
+'Cari data barang menggunakan QR Code'
+],
+
+transaksi:[
+'Barang Masuk / Keluar',
+'Riwayat transaksi inventaris'
+],
+
+peminjaman:[
+'Peminjaman',
+'Data peminjaman barang'
+],
+
+laporanPrasarana:[
+'Laporan Prasarana',
+'Laporan ruangan dan kelas'
+],
+
+laporan:[
+'Laporan Keseluruhan',
+'Ringkasan inventaris sekolah'
+]
+
+};
+
+if(titles[id]){
+
+document.getElementById('pageTitle')
+.textContent=titles[id][0];
+
+document.getElementById('pageSubtitle')
+.textContent=titles[id][1];
+
+}
+
+}
+
+
+function showPageById(id){
+
+const btn=document.querySelector(
+`.nav button[onclick*="'${id}'"]`
+);
+
+showPage(id,btn);
+
+}
+
+
+/* =====================================================
+   PRASARANA
+===================================================== */
+
+function displayNumberRaw(value){
+
+  if(value === undefined || value === null || value === ''){
+    return '-';
+  }
+
+  /*
+   * Jangan gunakan toFixed(), parseFloat(), atau Number() di tampilan.
+   * Tujuannya mempertahankan tampilan angka sebagaimana data disimpan.
+   */
+  return String(value);
+
+}
+
+
+function renderRooms(){
+
+const grid=document.getElementById('roomGrid');
+
+if(!grid)return;
+
+const search=
+(document.getElementById('searchRoom')
+?.value||'').toLowerCase();
+
+const data=appData.ruangan.filter(r=>
+String(r.Nama_Ruangan||'')
+.toLowerCase()
+.includes(search)
+);
+
+if(!data.length){
+
+grid.innerHTML=`
+<div class="empty">
+🏫 Belum ada data prasarana.
+</div>`;
+
+return;
+
+}
+
+grid.innerHTML=data.map(r=>`
+
+<div class="room">
+
+<div
+class="clickable"
+onclick="openRoom('${attr(r.ID_Ruangan)}')">
+
+<div class="icon">🏫</div>
+
+<div class="name">
+${esc(r.Nama_Ruangan)}
+</div>
+
+<div class="info">
+
+📐 ${displayNumberRaw(r.Panjang)} × ${displayNumberRaw(r.Lebar)}<br>
+
+📏 Tinggi: ${displayNumberRaw(r.Tinggi)}<br>
+
+📐 Luas: ${displayNumberRaw(r.Luas)} m²<br>
+
+📦 ${r.Jumlah||0} sarana<br>
+
+🏗️ Selasar: ${esc(r.Selasar||'-')}<br>
+
+🔧 ${esc(r.Kondisi||'-')}
+
+</div>
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn blue"
+onclick="openRoomEdit('${attr(r.ID_Ruangan)}')">
+✏️ Edit
+</button>
+
+<button
+class="btn yellow"
+onclick="event.stopPropagation();showRoomQR('${attr(r.ID_Ruangan)}')">
+🔳 QR
+</button>
+
+<button
+class="btn blue"
+onclick="event.stopPropagation();cetakPrasarana('${attr(r.ID_Ruangan)}')">
+🖨️ Cetak
+</button>
+
+<button
+class="btn red"
+onclick="hapusRuangan('${attr(r.ID_Ruangan)}')">
+🗑 Hapus
+</button>
+
+</div>
+
+</div>
+
+`).join('');
+
+}
+
+
+/*
+ * Klik khusus untuk Ruang Belajar Murid.
+ * Jika nama ruangan mengandung "Ruang Belajar Murid",
+ * maka halaman kelas dibuka.
+ */
+function openRoom(id){
+
+const room=appData.ruangan.find(
+r=>String(r.ID_Ruangan)===String(id)
+);
+
+if(!room)return;
+
+currentRoom=room;
+
+if(
+String(room.Nama_Ruangan)
+.toLowerCase()
+.includes('ruang belajar murid')
+){
+
+showPage('kelasPage');
+
+renderKelas();
+
+}else{
+
+openSaranaRoom(room.Nama_Ruangan);
+
+}
+
+}
+
+
+/* =====================================================
+   CRUD PRASARANA
+===================================================== */
+
+function generateRoomId(){
+  const d=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  return 'RNG-'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'-'+
+    pad(d.getHours())+pad(d.getMinutes())+pad(d.getSeconds())+'-'+
+    Math.random().toString(36).substring(2,7).toUpperCase();
+}
+
+function renderInlineQr(targetId,text,size=170){
+  const target=document.getElementById(targetId);
+  if(!target)return;
+  target.innerHTML='';
+  if(!text){
+    target.innerHTML='<div class="empty">ID belum tersedia.</div>';
+    return;
+  }
+  if(typeof QRCode!=='undefined'){
+    try{
+      new QRCode(target,{
+        text:String(text),
+        width:size,
+        height:size,
+        correctLevel:QRCode.CorrectLevel.M
+      });
+      return;
+    }catch(e){}
+  }
+  target.innerHTML=`<img style="width:${size}px;height:${size}px;object-fit:contain" alt="QR Code" src="https://quickchart.io/qr?text=${encodeURIComponent(text)}&size=500&margin=2&ecLevel=M">`;
+}
+
+function openRoomForm(editId=''){
+
+const r=editId
+?appData.ruangan.find(
+x=>String(x.ID_Ruangan)===String(editId))
+:null;
+
+const roomId=r?.ID_Ruangan || generateRoomId();
+
+document.getElementById('formTitle')
+.textContent=r
+?'Edit Prasarana'
+:'Tambah Prasarana';
+
+document.getElementById('formBody').innerHTML=`
+
+<div class="form-grid">
+
+<div class="field full">
+<label>ID Prasarana / QR</label>
+<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;padding:12px">
+  <div style="flex:1;min-width:250px">
+    <input id="fRoomId" value="${attr(roomId)}" readonly style="font-weight:700;background:#eef2ff">
+    <div style="font-size:11px;color:#64748b;margin-top:5px">ID dibuat otomatis dan menjadi isi QR Code prasarana.</div>
+  </div>
+  <div id="roomInlineQr" style="width:180px;min-height:180px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:10px;padding:5px"></div>
+</div>
+</div>
+
+<div class="field full">
+
+<label>Nama Ruangan</label>
+
+<input id="fRoomName"
+value="${attr(r?.Nama_Ruangan||'')}"
+placeholder="Contoh: Ruang Belajar Murid">
+
+</div>
+
+<div class="field">
+
+<label>Panjang</label>
+
+<input id="fRoomP"
+type="text"
+inputmode="decimal"
+value="${attr(r?.Panjang??'')}"
+placeholder="Contoh: 8,50">
+
+</div>
+
+<div class="field">
+
+<label>Lebar</label>
+
+<input id="fRoomL"
+type="text"
+inputmode="decimal"
+value="${attr(r?.Lebar??'')}"
+placeholder="Contoh: 8,50">
+
+</div>
+
+<div class="field">
+
+<label>Tinggi</label>
+
+<input id="fRoomT"
+type="text"
+inputmode="decimal"
+value="${attr(r?.Tinggi??'')}"
+placeholder="Contoh: 3,50">
+
+</div>
+
+<div class="field">
+
+<label>Luas</label>
+
+<input id="fRoomLuas"
+type="text"
+inputmode="decimal"
+value="${attr(r?.Luas??'')}"
+placeholder="Contoh: 68,00">
+
+</div>
+
+<div class="field">
+
+<label>Jumlah</label>
+
+<input id="fRoomJ"
+type="number"
+value="${r?.Jumlah||1}">
+
+</div>
+
+<div class="field">
+
+<label>Kondisi</label>
+
+<select id="fRoomK">
+
+<option ${r?.Kondisi==='Baik'?'selected':''}>
+Baik
+</option>
+
+<option ${r?.Kondisi==='Kurang Baik'?'selected':''}>
+Kurang Baik
+</option>
+
+<option ${r?.Kondisi==='Rusak'?'selected':''}>
+Rusak
+</option>
+
+</select>
+
+</div>
+
+<div class="field">
+
+<label>Status Kepemilikan</label>
+
+<input id="fRoomS"
+value="${attr(r?.Status_Kepemilikan||'Milik Sekolah')}">
+
+</div>
+
+<div class="field">
+
+<label>Selasar</label>
+
+<input
+id="fRoomSelasar"
+value="${attr(r?.Selasar||'')}"
+placeholder="Contoh: 3 x 2,07">
+
+</div>
+
+<div class="field full">
+
+<label>Keterangan</label>
+
+<textarea id="fRoomKet">${esc(r?.Keterangan||'')}</textarea>
+
+</div>
+
+</div>
+
+<br>
+
+<button
+class="btn blue"
+onclick="saveRoom('${attr(roomId)}')">
+💾 Simpan
+</button>
+`;
+
+document.getElementById('formModal')
+.classList.add('show');
+
+setTimeout(()=>renderInlineQr('roomInlineQr',roomId,170),50);
+}
+
+
+function openRuanganForm(){
+openRoomForm('');
+}
+
+
+function saveRoom(id){
+
+const data={
+
+id:id||val('fRoomId')||generateRoomId(),
+
+nama:val('fRoomName'),
+
+panjang:val('fRoomP'),
+
+lebar:val('fRoomL'),
+
+tinggi:val('fRoomT'),
+
+luas:val('fRoomLuas'),
+
+jumlah:val('fRoomJ'),
+
+kondisi:val('fRoomK'),
+
+statusKepemilikan:val('fRoomS'),
+
+selasar:val('fRoomSelasar'),
+
+keterangan:val('fRoomKet')
+
+};
+
+showLoading('Menyimpan prasarana...');
+
+google.script.run
+
+.withSuccessHandler(r=>{
+
+hideLoading();
+
+alert(r.message);
+
+if(r.success){
+
+closeForm();
+loadData();
+
+}
+
+})
+
+.withFailureHandler(e=>{
+
+hideLoading();
+
+alert(e.message);
+
+})
+
+.saveRuangan(data);
+
+}
+
+
+function openRoomEdit(id){
+openRoomForm(id);
+}
+
+
+function hapusRuangan(id){
+
+if(!confirm('Hapus prasarana ini?'))return;
+
+showLoading('Menghapus prasarana...');
+
+google.script.run
+
+.withSuccessHandler(r=>{
+
+hideLoading();
+
+alert(r.message);
+
+if(r.success)loadData();
+
+})
+
+.deleteRuangan(id);
+
+}
+
+
+/* =====================================================
+   KELAS
+===================================================== */
+
+function renderKelas(){
+
+const grid=document.getElementById('kelasGrid');
+
+if(!grid)return;
+
+const search=
+(document.getElementById('searchKelas')
+?.value||'').toLowerCase();
+
+let data=appData.kelas.filter(k=>
+String(k.Nama_Kelas||'')
+.toLowerCase()
+.includes(search)
+);
+
+if(!data.length){
+
+grid.innerHTML=`
+<div class="empty">
+📚 Belum ada ruang kelas.<br>
+Silakan tekan <b>Tambah Ruang Kelas</b>.
+</div>`;
+
+return;
+
+}
+
+grid.innerHTML=data.map(k=>`
+
+<div class="class-card">
+
+<div
+class="clickable"
+onclick="openKelas('${attr(k.ID_Kelas)}')">
+
+<div class="icon">📚</div>
+
+<div class="name">
+${esc(k.Nama_Kelas)}
+</div>
+
+<div class="info">
+
+🏫 Ruang Belajar Murid<br>
+
+📦 Klik untuk melihat sarana<br>
+
+📷 Dokumentasi kelas tersedia
+
+</div>
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn blue"
+onclick="openKelasForm('${attr(k.ID_Kelas)}')">
+✏️ Edit
+</button>
+
+<button
+class="btn red"
+onclick="hapusKelas('${attr(k.ID_Kelas)}')">
+🗑 Hapus
+</button>
+
+</div>
+
+</div>
+
+`).join('');
+
+}
+
+
+function openKelas(id){
+
+const k=appData.kelas.find(
+x=>String(x.ID_Kelas)===String(id)
+);
+
+if(!k)return;
+
+currentKelas=k;
+
+openSaranaRoom(k.Nama_Kelas);
+
+}
+
+
+function openKelasForm(id=''){
+
+const k=id
+?appData.kelas.find(
+x=>String(x.ID_Kelas)===String(id))
+:null;
+
+document.getElementById('formTitle')
+.textContent=k
+?'Edit Ruang Kelas'
+:'Tambah Ruang Kelas';
+
+document.getElementById('formBody').innerHTML=`
+
+<div class="form-grid">
+
+<div class="field full">
+
+<label>Nama Kelas</label>
+
+<input
+id="fKelasName"
+value="${attr(k?.Nama_Kelas||'')}"
+placeholder="Contoh: X TKJ">
+
+</div>
+
+<div class="field full">
+
+<label>Ruangan</label>
+
+<input
+id="fKelasRoom"
+value="Ruang Belajar Murid"
+readonly>
+
+</div>
+
+<div class="field full">
+
+<label>Keterangan</label>
+
+<textarea
+id="fKelasKet">${esc(k?.Keterangan||'')}</textarea>
+
+</div>
+
+</div>
+
+<br>
+
+<button
+class="btn blue"
+onclick="saveKelas('${attr(id)}')">
+💾 Simpan Kelas
+</button>
+
+`;
+
+document.getElementById('formModal')
+.classList.add('show');
+
+}
+
+
+function saveKelas(id){
+
+const nama=val('fKelasName');
+
+if(!nama){
+
+alert('Nama kelas wajib diisi.');
+
+return;
+
+}
+
+const data={
+
+id:id||'',
+
+nama:nama,
+
+ruangan:'Ruang Belajar Murid',
+
+keterangan:val('fKelasKet')
+
+};
+
+showLoading('Menyimpan kelas...');
+
+google.script.run
+
+.withSuccessHandler(r=>{
+
+hideLoading();
+
+alert(r.message);
+
+if(r.success){
+
+closeForm();
+loadData();
+
+}
+
+})
+
+.withFailureHandler(e=>{
+
+hideLoading();
+
+alert(e.message);
+
+})
+
+.saveKelas(data);
+
+}
+
+
+function hapusKelas(id){
+
+if(!confirm(
+'Hapus kelas ini?\n\nData sarana kelas tidak otomatis dihapus.'
+))return;
+
+showLoading('Menghapus kelas...');
+
+google.script.run
+
+.withSuccessHandler(r=>{
+
+hideLoading();
+
+alert(r.message);
+
+if(r.success)loadData();
+
+})
+
+.deleteKelas(id);
+
+}
+
+
+/* =====================================================
+   SARANA
+===================================================== */
+
+function openSaranaRoom(name){
+
+saranaContext={
+type:'room',
+name:name
+};
+
+currentKelas=null;
+
+document.getElementById('saranaTitle')
+.textContent='📦 Sarana - '+name;
+
+document.getElementById('saranaSubtitle')
+.textContent=
+'Daftar sarana dan dokumentasi pada '+name;
+
+showPage('sarana');
+
+renderSarana();
+
+}
+
+
+function openSaranaKelas(kelas){
+
+saranaContext={
+type:'kelas',
+name:kelas
+};
+
+document.getElementById('saranaTitle')
+.textContent='📦 Sarana - '+kelas;
+
+document.getElementById('saranaSubtitle')
+.textContent=
+'Daftar sarana dan dokumentasi kelas '+kelas;
+
+showPage('sarana');
+
+renderSarana();
+
+}
+
+
+function renderSarana(){
+
+const grid=document.getElementById('saranaGrid');
+
+if(!grid)return;
+
+// Tampilkan SEMUA data sarana saat menu Data Sarana dibuka langsung.
+// Jika dibuka dari ruangan/kelas, tetap tampilkan hanya sarana pada tempat tersebut.
+let data=Array.isArray(appData.barang) ? [...appData.barang] : [];
+
+if(saranaContext && saranaContext.name){
+
+const contextName=String(saranaContext.name||'').trim().toLowerCase();
+
+data=data.filter(b=>
+String(b.Ruangan||'').trim().toLowerCase() === contextName
+);
+
+}
+
+const search=
+(document.getElementById('searchSarana')
+?.value||'').toLowerCase();
+
+data=data.filter(b=>
+String(b.Nama_Barang||'')
+.toLowerCase()
+.includes(search)
+);
+
+if(!data.length){
+
+grid.innerHTML=`
+<div class="empty">
+📦 Belum ada sarana pada tempat ini.
+</div>`;
+
+return;
+
+}
+
+grid.innerHTML=data.map(b=>`
+
+<div class="item-card clickable"
+onclick="openDoc('${attr(b.ID_Barang)}')">
+
+<div class="icon">📦</div>
+
+<div class="name">
+${esc(b.Nama_Barang)}
+</div>
+
+<div class="info">
+
+🔢 Jumlah: <b>${b.Jumlah||0}</b><br>
+
+🏷️ Merk: ${esc(b.Merk||'-')}<br>
+
+📐 Ukuran: ${esc(b.Ukuran||'-')}<br>
+
+📅 Tahun: ${esc(b.Tahun||'-')}<br>
+
+💰 Harga: ${money(b.Harga)}<br>
+
+🔧 Kondisi:
+Baik ${b.Baik||0} /
+Kurang ${b.Kurang_Baik||0} /
+Rusak ${b.Rusak_Berat||0}
+
+</div>
+
+<div class="photo-link">
+📷 Klik untuk Dokumentasi
+</div>
+
+<div class="actions">
+
+<button
+class="btn yellow"
+onclick="event.stopPropagation();showBarangQR('${attr(b.ID_Barang)}')">
+🔳 QR
+</button>
+
+<button
+class="btn blue"
+onclick="event.stopPropagation();openBarangForm('${attr(b.ID_Barang)}')">
+✏️ Edit
+</button>
+
+<button
+class="btn red"
+onclick="event.stopPropagation();hapusBarang('${attr(b.ID_Barang)}')">
+🗑 Hapus
+</button>
+
+</div>
+
+</div>
+
+`).join('');
+
+}
+
+
+function backFromSarana(){
+
+if(currentKelas||
+saranaContext.type==='kelas'){
+
+showPage('kelasPage');
+
+renderKelas();
+
+}else{
+
+showPage('prasarana');
+
+renderRooms();
+
+}
+
+}
+
+
+/* =====================================================
+   FORM SARANA
+===================================================== */
+
+function openBarangForm(editId=''){
+
+const b=editId
+?appData.barang.find(
+x=>String(x.ID_Barang)===String(editId))
+:null;
+
+let selectedRoom=
+b?.Ruangan ||
+saranaContext.name ||
+currentRoom?.Nama_Ruangan ||
+'';
+
+let options=[];
+
+appData.ruangan.forEach(r=>{
+options.push(r.Nama_Ruangan);
+});
+
+appData.kelas.forEach(k=>{
+options.push(k.Nama_Kelas);
+});
+
+if(selectedRoom &&
+!options.includes(selectedRoom)){
+options.push(selectedRoom);
+}
+
+document.getElementById('formTitle')
+.textContent=b
+?'Edit Sarana'
+:'Tambah Sarana';
+
+document.getElementById('formBody').innerHTML=`
+
+<div class="form-grid">
+
+<div class="field full">
+
+<label>Nama Barang</label>
+
+<input
+id="fBarangNama"
+value="${attr(b?.Nama_Barang||'')}"
+placeholder="Contoh: Komputer">
+
+</div>
+
+<div class="field">
+
+<label>Merk</label>
+
+<input
+id="fBarangMerk"
+value="${attr(b?.Merk||'')}">
+
+</div>
+
+<div class="field">
+
+<label>No. Seri</label>
+
+<input
+id="fBarangSeri"
+value="${attr(b?.No_Seri||'')}">
+
+</div>
+
+<div class="field">
+
+<label>Ukuran</label>
+
+<input
+id="fBarangUkuran"
+value="${attr(b?.Ukuran||'')}"
+placeholder="Contoh: 24 inch">
+
+</div>
+
+<div class="field">
+
+<label>Bahan</label>
+
+<input
+id="fBarangBahan"
+value="${attr(b?.Bahan||'')}">
+
+</div>
+
+<div class="field">
+
+<label>Tahun Pembuatan/Pembelian</label>
+
+<input
+id="fBarangTahun"
+type="number"
+value="${attr(b?.Tahun||'')}">
+
+</div>
+
+<div class="field">
+
+<label>Kode Barang</label>
+
+<input
+id="fBarangKode"
+value="${attr(b?.Kode_Barang||'')}">
+
+</div>
+
+<div class="field">
+<label>QR Code</label>
+<div style="font-size:11px;color:#64748b;padding:8px 0">QR dibuat otomatis setelah data barang disimpan.</div>
+</div>
+
+<div class="field">
+
+<label>Jumlah</label>
+
+<input
+id="fBarangJumlah"
+type="number"
+min="0"
+value="${b?.Jumlah||1}">
+
+</div>
+
+<div class="field">
+
+<label>Harga Beli</label>
+
+<input
+id="fBarangHarga"
+type="number"
+min="0"
+value="${b?.Harga||0}">
+
+</div>
+
+<div class="field">
+
+<label>Keadaan Baik</label>
+
+<input
+id="fBarangBaik"
+type="number"
+min="0"
+value="${b?.Baik||0}">
+
+</div>
+
+<div class="field">
+
+<label>Kurang Baik</label>
+
+<input
+id="fBarangKurang"
+type="number"
+min="0"
+value="${b?.Kurang_Baik||0}">
+
+</div>
+
+<div class="field">
+
+<label>Rusak Berat</label>
+
+<input
+id="fBarangRusak"
+type="number"
+min="0"
+value="${b?.Rusak_Berat||0}">
+
+</div>
+
+<div class="field full">
+
+<label>Ruangan / Kelas</label>
+
+<select id="fBarangRoom">
+
+${options.map(o=>`
+
+<option
+value="${attr(o)}"
+${o===selectedRoom?'selected':''}>
+${esc(o)}
+</option>
+
+`).join('')}
+
+</select>
+
+</div>
+
+<div class="field full">
+
+<label>Keterangan</label>
+
+<textarea
+id="fBarangKet">${esc(b?.Keterangan||'')}</textarea>
+
+</div>
+
+</div>
+
+<br>
+
+<button
+class="btn blue"
+onclick="saveBarang('${attr(editId)}')">
+💾 Simpan Sarana
+</button>
+
+`;
+
+document.getElementById('formModal')
+.classList.add('show');
+
+}
+
+
+function saveBarang(id){
+
+const jumlah=Number(val('fBarangJumlah'))||0;
+
+const baik=Number(val('fBarangBaik'))||0;
+
+const kurang=Number(val('fBarangKurang'))||0;
+
+const rusak=Number(val('fBarangRusak'))||0;
+
+if(!val('fBarangNama')){
+
+alert('Nama barang wajib diisi.');
+
+return;
+
+}
+
+if(baik+kurang+rusak>jumlah){
+
+alert(
+'Jumlah kondisi tidak boleh lebih besar dari jumlah barang.'
+);
+
+return;
+
+}
+
+const data={
+
+id:id||'',
+
+nama:val('fBarangNama'),
+
+merk:val('fBarangMerk'),
+
+noSeri:val('fBarangSeri'),
+
+ukuran:val('fBarangUkuran'),
+
+bahan:val('fBarangBahan'),
+
+tahun:val('fBarangTahun'),
+
+kodeBarang:val('fBarangKode'),
+
+jumlah:jumlah,
+
+harga:val('fBarangHarga'),
+
+baik:baik,
+
+kurangBaik:kurang,
+
+rusakBerat:rusak,
+
+ruangan:val('fBarangRoom'),
+
+keterangan:val('fBarangKet')
+
+};
+
+showLoading('Menyimpan sarana...');
+
+google.script.run
+
+.withSuccessHandler(r=>{
+
+hideLoading();
+
+alert(r.message);
+
+if(r.success){
+
+closeForm();
+loadData();
+
+}
+
+})
+
+.withFailureHandler(e=>{
+
+hideLoading();
+
+alert(e.message);
+
+})
+
+.saveBarang(data);
+
+}
+
+
+function hapusBarang(id){
+
+if(!confirm('Hapus sarana ini?'))return;
+
+showLoading('Menghapus sarana...');
+
+google.script.run
+
+.withSuccessHandler(r=>{
+
+hideLoading();
+
+alert(r.message);
+
+if(r.success)loadData();
+
+})
+
+.deleteBarang(id);
+
+}
+
+
+/* =====================================================
+   DOKUMENTASI
+===================================================== */
+
+function openDoc(id){
+
+const b=appData.barang.find(
+x=>String(x.ID_Barang)===String(id)
+);
+
+if(!b){
+
+alert('Data sarana tidak ditemukan.');
+
+return;
+
+}
+
+currentSarana=b;
+
+document.getElementById('docBarang')
+.textContent=b.Nama_Barang;
+
+document.getElementById('docRoom')
+.textContent='📍 '+b.Ruangan;
+
+document.getElementById('docFile').value='';
+
+document.getElementById('preview').innerHTML='';
+
+document.getElementById('docNote').value='';
+
+document.getElementById('docModal')
+.classList.add('show');
+
+loadDocs();
+
+}
+
+
+function loadDocs(){
+
+const grid=document.getElementById('docGrid');
+
+grid.innerHTML=
+'<div class="empty">⏳ Memuat dokumentasi...</div>';
+
+google.script.run
+
+.withSuccessHandler(data=>{
+
+if(!data||!data.length){
+
+grid.innerHTML=
+'<div class="empty">📷 Belum ada dokumentasi.</div>';
+
+return;
+
+}
+
+grid.innerHTML=data.map(d=>`
+
+<div class="doc">
+
+${
+d.Image
+?
+`<img
+src="${d.Image}"
+alt="Dokumentasi">`
+:
+`<div style="height:170px;display:flex;align-items:center;justify-content:center">
+❌ Foto tidak tersedia
+</div>`
+}
+
+<div class="doc-body">
+
+<p>
+${esc(d.Keterangan||'Tidak ada keterangan')}
+</p>
+
+<button
+class="btn red"
+onclick="deleteDoc('${attr(d.ID_Dok)}')">
+🗑 Hapus
+</button>
+
+</div>
+
+</div>
+
+`).join('');
+
+})
+
+.withFailureHandler(e=>{
+
+grid.innerHTML=
+'<div class="empty">❌ Gagal memuat foto.</div>';
+
+console.error(e);
+
+})
+
+.getDokumentasiSarana(
+currentSarana.Ruangan,
+currentSarana.Nama_Barang
+);
+
+}
+
+
+function previewImage(event){
+
+const file=event.target.files[0];
+
+if(!file)return;
+
+if(!file.type.startsWith('image/')){
+
+alert('File harus berupa gambar.');
+
+event.target.value='';
+
+return;
+
+}
+
+const reader=new FileReader();
+
+reader.onload=e=>{
+
+document.getElementById('preview')
+.innerHTML=
+`<img src="${e.target.result}">`;
+
+};
+
+reader.readAsDataURL(file);
+
+}
+
+
+function saveDoc(){
+
+if(!currentSarana){
+
+alert('Sarana belum dipilih.');
+
+return;
+
+}
+
+const file=
+document.getElementById('docFile')
+.files[0];
+
+if(!file){
+
+alert('Pilih foto terlebih dahulu.');
+
+return;
+
+}
+
+const reader=new FileReader();
+
+showLoading('Mengupload foto ke Google Drive...');
+
+reader.onload=e=>{
+
+const data={
+
+ruangan:currentSarana.Ruangan,
+
+namaBarang:currentSarana.Nama_Barang,
+
+keterangan:
+val('docNote'),
+
+file:{
+
+name:file.name,
+
+mimeType:file.type,
+
+base64:e.target.result
+
+}
+
+};
+
+google.script.run
+
+.withSuccessHandler(r=>{
+
+hideLoading();
+
+alert(r.message);
+
+if(r.success){
+
+document.getElementById('docFile')
+.value='';
+
+document.getElementById('preview')
+.innerHTML='';
+
+document.getElementById('docNote')
+.value='';
+
+loadDocs();
+
+}
+
+})
+
+.withFailureHandler(e=>{
+
+hideLoading();
+
+alert(
+'Gagal upload foto: '+e.message
+);
+
+})
+
+.saveDokumentasi(data);
+
+};
+
+reader.readAsDataURL(file);
+
+}
+
+
+function deleteDoc(id){
+
+if(!confirm('Hapus dokumentasi ini?'))return;
+
+showLoading('Menghapus dokumentasi...');
+
+google.script.run
+
+.withSuccessHandler(r=>{
+
+hideLoading();
+
+alert(r.message);
+
+if(r.success)loadDocs();
+
+})
+
+.withFailureHandler(e=>{
+
+hideLoading();
+
+alert(e.message);
+
+})
+
+.deleteDokumentasi(id);
+
+}
+
+
+function closeDoc(){
+
+document.getElementById('docModal')
+.classList.remove('show');
+
+currentSarana=null;
+
+}
+
+
+/* =====================================================
+   TRANSAKSI
+===================================================== */
+
+function renderTransaksi(){
+
+const tbody=
+document.getElementById('transaksiTable');
+
+if(!tbody)return;
+
+if(!appData.transaksi.length){
+
+tbody.innerHTML=
+'<tr><td colspan="8">Belum ada transaksi.</td></tr>';
+
+return;
+
+}
+
+tbody.innerHTML=appData.transaksi.map(t=>`
+
+<tr>
+
+<td>${esc(t.ID_Transaksi)}</td>
+
+<td>${esc(t.Tanggal)}</td>
+
+<td>${esc(t.Jenis)}</td>
+
+<td>${esc(t.Nama_Barang)}</td>
+
+<td>${t.Jumlah||0}</td>
+
+<td>${esc(t.Harga??'-')}</td>
+
+<td>${esc(t.Keterangan||'-')}</td>
+
+<td>
+
+<button
+class="btn red"
+onclick="hapusTransaksi('${attr(t.ID_Transaksi)}')">
+Hapus
+</button>
+
+</td>
+
+</tr>
+
+`).join('');
+
+}
+
+
+function openTransaksiForm(){
+
+document.getElementById('formTitle')
+.textContent='Barang Masuk / Keluar';
+
+document.getElementById('formBody').innerHTML=`
+
+<div class="form-grid">
+
+<div class="field">
+
+<label>Jenis</label>
+
+<select id="fJenis">
+<option>Masuk</option>
+<option>Keluar</option>
+</select>
+
+</div>
+
+<div class="field">
+<label>Tanggal</label>
+<input id="fTrxTanggal" type="date">
+</div>
+
+<div class="field">
+
+
+<label>Barang</label>
+
+<select id="fTrxBarang">
+
+${appData.barang.map(b=>`
+
+<option value="${attr(b.ID_Barang)}">
+${esc(b.Nama_Barang)}
+</option>
+
+`).join('')}
+
+</select>
+
+</div>
+
+<div class="field">
+
+<label>Jumlah</label>
+
+<input
+id="fTrxJumlah"
+type="number"
+value="1">
+
+</div>
+
+<div class="field">
+
+<label>Harga</label>
+
+<input
+id="fTrxHarga"
+type="text"
+inputmode="decimal"
+placeholder="Contoh: 150000">
+
+</div>
+
+<div class="field full">
+
+<label>Keterangan</label>
+
+<textarea id="fTrxKet"></textarea>
+
+</div>
+
+</div>
+
+<br>
+
+<button
+class="btn blue"
+onclick="saveTrx()">
+💾 Simpan
+</button>
+`;
+
+const tanggalTrx=document.getElementById('fTrxTanggal');
+if(tanggalTrx){
+  const now=new Date();
+  tanggalTrx.value =
+    now.getFullYear() + '-' +
+    String(now.getMonth()+1).padStart(2,'0') + '-' +
+    String(now.getDate()).padStart(2,'0');
+}
+
+const trxBarangSelect=document.getElementById('fTrxBarang');
+const trxHargaInput=document.getElementById('fTrxHarga');
+function isiHargaTransaksi(){
+  const item=appData.barang.find(x=>String(x.ID_Barang)===String(trxBarangSelect?.value));
+  if(trxHargaInput) trxHargaInput.value = item?.Harga ?? '';
+}
+if(trxBarangSelect){
+  trxBarangSelect.addEventListener('change', isiHargaTransaksi);
+  isiHargaTransaksi();
+}
+
+document.getElementById('formModal')
+.classList.add('show');
+
+}
+
+
+function saveTrx(){
+
+const id=val('fTrxBarang');
+
+const b=appData.barang.find(
+x=>String(x.ID_Barang)===String(id)
+);
+
+const data={
+
+jenis:val('fJenis'),
+
+tanggal:val('fTrxTanggal'),
+
+idBarang:id,
+
+namaBarang:b?.Nama_Barang||'',
+
+jumlah:val('fTrxJumlah'),
+
+harga:val('fTrxHarga'),
+
+keterangan:val('fTrxKet')
+
+};
+
+showLoading('Menyimpan transaksi...');
+
+google.script.run
+
+.withSuccessHandler(r=>{
+
+hideLoading();
+
+alert(r.message);
+
+if(r.success){
+
+closeForm();
+loadData();
+
+}
+
+})
+
+.saveTransaksi(data);
+
+}
+
+
+function hapusTransaksi(id){
+
+if(!confirm('Hapus transaksi ini?'))return;
+
+showLoading('Menghapus transaksi...');
+
+google.script.run
+
+.withSuccessHandler(r=>{
+
+hideLoading();
+
+alert(r.message);
+
+if(r.success)loadData();
+
+})
+
+.deleteTransaksi(id);
+
+}
+
+
+/* =====================================================
+   PEMINJAMAN
+===================================================== */
+
+function renderPeminjaman(){
+
+const tbody=
+document.getElementById('peminjamanTable');
+
+if(!tbody)return;
+
+if(!appData.peminjaman.length){
+
+tbody.innerHTML=
+'<tr><td colspan="7">Belum ada peminjaman.</td></tr>';
+
+return;
+
+}
+
+tbody.innerHTML=
+appData.peminjaman.map(p=>`
+
+<tr>
+
+<td>${esc(p.ID_Pinjam)}</td>
+
+<td>${esc(p.Tanggal_Pinjam)}</td>
+
+<td>${esc(p.Nama_Peminjam)}</td>
+
+<td>${esc(p.Nama_Barang)}</td>
+
+<td>${p.Jumlah||0}</td>
+
+<td>${esc(p.Status)}</td>
+
+<td>
+
+${
+p.Status==='Dipinjam'
+?
+`<button
+class="btn green"
+onclick="kembalikan(
+'${attr(p.ID_Pinjam)}',
+'${attr(p.ID_Barang)}',
+${Number(p.Jumlah)||0}
+)">
+Kembalikan
+</button>`
+:
+''
+}
+
+<button
+class="btn blue"
+onclick="cetakPeminjaman('${attr(p.ID_Pinjam)}')">
+🖨️ Cetak
+</button>
+
+<button
+class="btn red"
+onclick="hapusPeminjaman('${attr(p.ID_Pinjam)}')">
+Hapus
+</button>
+
+</td>
+
+</tr>
+
+`).join('');
+
+}
+
+
+function openPeminjamanForm(){
+
+document.getElementById('formTitle')
+.textContent='Tambah Peminjaman';
+
+document.getElementById('formBody').innerHTML=`
+
+<div class="form-grid">
+
+<div class="field">
+<label>Tanggal</label>
+<input id="fPjmTanggal" type="date">
+</div>
+
+<div class="field full">
+
+<label>Nama Peminjam</label>
+
+<input
+id="fPinjamNama"
+placeholder="Nama peminjam">
+
+</div>
+
+<div class="field">
+
+<label>Barang</label>
+
+<select id="fPinjamBarang">
+
+${appData.barang.map(b=>`
+
+<option value="${attr(b.ID_Barang)}">
+${esc(b.Nama_Barang)}
+</option>
+
+`).join('')}
+
+</select>
+
+</div>
+
+<div class="field">
+
+<label>Jumlah</label>
+
+<input
+id="fPinjamJumlah"
+type="number"
+value="1">
+
+</div>
+
+</div>
+
+<br>
+
+<button
+class="btn blue"
+onclick="savePinjam()">
+💾 Simpan Peminjaman
+</button>
+`;
+
+const tanggalPjm=document.getElementById('fPjmTanggal');
+if(tanggalPjm){
+  const now=new Date();
+  tanggalPjm.value =
+    now.getFullYear() + '-' +
+    String(now.getMonth()+1).padStart(2,'0') + '-' +
+    String(now.getDate()).padStart(2,'0');
+}
+
+document.getElementById('formModal')
+.classList.add('show');
+
+}
+
+
+function savePinjam(){
+
+const id=val('fPinjamBarang');
+
+const b=appData.barang.find(
+x=>String(x.ID_Barang)===String(id)
+);
+
+const data={
+tanggalPinjam:val('fPjmTanggal'),
+
+peminjam:val('fPinjamNama'),
+
+idBarang:id,
+
+namaBarang:b?.Nama_Barang||'',
+
+jumlah:val('fPinjamJumlah')
+
+};
+
+showLoading('Menyimpan peminjaman...');
+
+google.script.run
+
+.withSuccessHandler(r=>{
+
+hideLoading();
+
+alert(r.message);
+
+if(r.success){
+
+closeForm();
+loadData();
+
+}
+
+})
+
+.savePeminjaman(data);
+
+}
+
+
+function cetakPeminjaman(id){
+
+const p=appData.peminjaman.find(x=>String(x.ID_Pinjam)===String(id));
+if(!p){alert('Data peminjaman tidak ditemukan.');return;}
+
+const win=window.open('','_blank','width=900,height=700');
+if(!win){alert('Popup diblokir browser. Izinkan popup untuk mencetak.');return;}
+
+const status=String(p.Status||'-');
+const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Cetak Peminjaman ${esc(p.ID_Pinjam||'')}</title>
+<style>
+@page{size:A4 portrait;margin:15mm}
+*{box-sizing:border-box}
+body{font-family:Arial,Helvetica,sans-serif;color:#000;margin:0;font-size:12px}
+h1{text-align:center;font-size:18px;margin:0 0 4px}
+.subtitle{text-align:center;font-size:12px;margin:0 0 18px}
+.detail{width:100%;border:1px solid #000;border-collapse:collapse}
+.detail td{border:1px solid #000;padding:8px 10px;vertical-align:top}
+.detail td:first-child{width:35%;font-weight:bold}
+.status{text-align:center;margin:18px 0;font-weight:bold}
+.sign{margin-top:45px;display:grid;grid-template-columns:1fr 1fr;gap:35mm;text-align:center}
+.signbox{min-height:65px}
+.line{margin-top:55px;border-bottom:1px solid #000}
+.note{margin-top:30px;font-size:10px}
+</style></head><body>
+<h1>BUKTI PEMINJAMAN BARANG</h1>
+<div class="subtitle">Inventaris SMK Sri Langkat</div>
+<table class="detail">
+<tr><td>ID Peminjaman</td><td>${esc(p.ID_Pinjam||'-')}</td></tr>
+<tr><td>Tanggal Peminjaman</td><td>${esc(p.Tanggal_Pinjam||'-')}</td></tr>
+<tr><td>Nama Peminjam</td><td>${esc(p.Nama_Peminjam||'-')}</td></tr>
+<tr><td>Nama Barang</td><td>${esc(p.Nama_Barang||'-')}</td></tr>
+<tr><td>Jumlah</td><td>${p.Jumlah??0}</td></tr>
+<tr><td>Status</td><td>${esc(status)}</td></tr>
+</table>
+<div class="status">${status==='Dipinjam'?'BARANG MASIH DIPINJAM':'BARANG SUDAH DIKEMBALIKAN'}</div>
+<div class="sign">
+<div class="signbox">Peminjam<div class="line"></div></div>
+<div class="signbox">Penj. Ruangan<div class="line"></div></div>
+</div>
+<div class="note">Dicetak dari Sistem Inventaris SMK Sri Langkat.</div>
+</body></html>`;
+
+win.document.write(html);
+win.document.close();
+setTimeout(()=>win.print(),300);
+
+}
+
+
+function hapusPeminjaman(id){
+
+if(!confirm('Hapus data peminjaman ini?'))return;
+
+showLoading('Menghapus peminjaman...');
+
+google.script.run
+
+.withSuccessHandler(r=>{
+
+hideLoading();
+
+alert(r.message);
+
+if(r.success)loadData();
+
+})
+
+.deletePeminjaman(id);
+
+}
+
+
+function kembalikan(id,idBarang,jumlah){
+
+if(!confirm('Barang sudah dikembalikan?'))return;
+
+showLoading('Memproses pengembalian...');
+
+google.script.run
+
+.withSuccessHandler(r=>{
+
+hideLoading();
+
+alert(r.message);
+
+if(r.success)loadData();
+
+})
+
+.processPengembalian(
+id,idBarang,jumlah
+);
+
+}
+
+
+/* =====================================================
+   LAPORAN TRANSAKSI
+   Menggunakan seluruh field dari data Transaksi
+===================================================== */
+
+function renderLaporanTransaksi(){
+
+const box=document.getElementById('laporanTransaksiContent');
+if(!box)return;
+
+const data=Array.isArray(appData.transaksi)?appData.transaksi:[];
+
+box.innerHTML=`
+<div class="laporan-filter" style="margin-bottom:12px;padding:12px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
+    <div class="field" style="margin:0">
+      <label>Dari Tanggal</label>
+      <input type="date" id="trxFilterDari" onchange="filterLaporanTransaksi()">
+    </div>
+    <div class="field" style="margin:0">
+      <label>Sampai Tanggal</label>
+      <input type="date" id="trxFilterSampai" onchange="filterLaporanTransaksi()">
+    </div>
+    <div class="field" style="margin:0">
+      <label>Jenis Transaksi</label>
+      <select id="trxFilterJenis" onchange="filterLaporanTransaksi()">
+        <option value="">Semua</option>
+        <option value="Masuk">Masuk</option>
+        <option value="Keluar">Keluar</option>
+      </select>
+    </div>
+    <div class="field" style="margin:0;min-width:220px;flex:1">
+      <label>Cari Barang</label>
+      <input id="trxFilterCari" placeholder="Nama / ID barang..." oninput="filterLaporanTransaksi()">
+    </div>
+    <button type="button" class="btn gray" onclick="resetFilterLaporanTransaksi()">↺ Reset</button>
+  </div>
+</div>
+
+<div id="trxReportBody"></div>
+`;
+
+filterLaporanTransaksi();
+}
+
+function trxDateValue(v){
+  if(!v)return '';
+  const str=String(v).trim();
+  const m=str.match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+  if(m)return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
+  const d=str.match(/(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/);
+  if(d)return `${d[3]}-${String(d[2]).padStart(2,'0')}-${String(d[1]).padStart(2,'0')}`;
+  return '';
+}
+
+function filterLaporanTransaksi(){
+  const body=document.getElementById('trxReportBody');
+  if(!body)return;
+  const dari=document.getElementById('trxFilterDari')?.value||'';
+  const sampai=document.getElementById('trxFilterSampai')?.value||'';
+  const jenis=(document.getElementById('trxFilterJenis')?.value||'').toLowerCase();
+  const cari=(document.getElementById('trxFilterCari')?.value||'').trim().toLowerCase();
+
+  const semua=Array.isArray(appData.transaksi)?appData.transaksi:[];
+  const data=semua.filter(t=>{
+    const d=trxDateValue(t.Tanggal);
+    if(dari && (!d || d<dari))return false;
+    if(sampai && (!d || d>sampai))return false;
+    if(jenis && String(t.Jenis||'').toLowerCase()!==jenis)return false;
+    if(cari){
+      const hay=[t.ID_Transaksi,t.ID_Barang,t.Nama_Barang,t.Keterangan].map(x=>String(x||'').toLowerCase()).join(' ');
+      if(!hay.includes(cari))return false;
+    }
+    return true;
+  });
+
+  const totalMasuk=data.filter(t=>String(t.Jenis||'').toLowerCase()==='masuk').reduce((n,t)=>n+(Number(t.Jumlah)||0),0);
+  const totalKeluar=data.filter(t=>String(t.Jenis||'').toLowerCase()==='keluar').reduce((n,t)=>n+(Number(t.Jumlah)||0),0);
+
+  body.innerHTML=`
+  <div class="table-box">
+    <div style="padding:12px 8px 8px;text-align:center">
+      <h1 style="margin:0 0 4px;font-size:18px">LAPORAN TRANSAKSI INVENTARIS</h1>
+      <p style="margin:0;font-size:11px">Riwayat barang masuk dan barang keluar</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 10px;padding:0 8px">
+      <div style="padding:8px 12px;border:1px solid #bbf7d0;border-radius:8px;background:#f0fdf4"><b>Total Masuk:</b> ${totalMasuk}</div>
+      <div style="padding:8px 12px;border:1px solid #fecaca;border-radius:8px;background:#fef2f2"><b>Total Keluar:</b> ${totalKeluar}</div>
+      <div style="padding:8px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc"><b>Jumlah Transaksi:</b> ${data.length}</div>
+    </div>
+    <table>
+      <thead><tr>
+        <th>No</th><th>ID Transaksi</th><th>Tanggal</th><th>Jenis</th>
+        <th>ID Barang</th><th>Nama Barang</th><th>Jumlah</th><th>Keterangan</th>
+      </tr></thead>
+      <tbody>
+        ${data.length?data.map((t,i)=>`<tr>
+          <td>${i+1}</td>
+          <td>${esc(t.ID_Transaksi||'-')}</td>
+          <td>${esc(t.Tanggal||'-')}</td>
+          <td>${esc(t.Jenis||'-')}</td>
+          <td>${esc(t.ID_Barang||'-')}</td>
+          <td style="text-align:left">${esc(t.Nama_Barang||'-')}</td>
+          <td>${t.Jumlah??0}</td>
+          <td style="text-align:left">${esc(t.Keterangan||'-')}</td>
+        </tr>`).join(''):'<tr><td colspan="8">Tidak ada transaksi sesuai filter.</td></tr>'}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function resetFilterLaporanTransaksi(){
+  ['trxFilterDari','trxFilterSampai','trxFilterCari'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  const j=document.getElementById('trxFilterJenis');if(j)j.value='';
+  filterLaporanTransaksi();
+}
+
+
+/* =====================================================
+   LAPORAN
+===================================================== */
+
+function renderLaporan(){
+
+/* =====================================================
+   LAPORAN PRASARANA
+   HANYA DATA PRASARANA
+===================================================== */
+
+const rp=document.getElementById('laporanPrasaranaContent');
+
+if(rp){
+  const data=Array.isArray(appData.ruangan)?appData.ruangan:[];
+
+  rp.innerHTML=`
+  <div class="table-box">
+    <div style="padding:12px 8px 8px;text-align:center">
+      <h1 style="margin:0 0 4px;font-size:18px">LAPORAN DATA PRASARANA</h1>
+      <p style="margin:0;font-size:11px">Data prasarana sekolah</p>
+    </div>
+    <table>
+      <thead><tr>
+        <th>No</th><th>Nama Prasarana</th><th>Panjang</th><th>Lebar</th><th>Tinggi</th>
+        <th>Luas</th><th>Jumlah</th><th>Kondisi</th><th>Status Kepemilikan</th>
+        <th>Selasar</th><th>Keterangan</th>
+      </tr></thead>
+      <tbody>
+        ${data.map((r,i)=>`<tr>
+          <td>${i+1}</td>
+          <td style="text-align:left">${esc(r.Nama_Ruangan||'-')}</td>
+          <td>${displayNumberRaw(r.Panjang)}</td>
+          <td>${displayNumberRaw(r.Lebar)}</td>
+          <td>${displayNumberRaw(r.Tinggi)}</td>
+          <td>${displayNumberRaw(r.Luas)}</td>
+          <td>${r.Jumlah??0}</td>
+          <td>${esc(r.Kondisi||'-')}</td>
+          <td style="text-align:left">${esc(r.Status_Kepemilikan||'-')}</td>
+          <td style="text-align:left">${esc(r.Selasar||'-')}</td>
+          <td style="text-align:left">${esc(r.Keterangan||'-')}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+/* =====================================================
+   LAPORAN KESELURUHAN
+   SETIAP PRASARANA = 1 HALAMAN
+   Berisi detail prasarana + sarana/barang di dalamnya.
+===================================================== */
+
+const box=document.getElementById('laporanContent');
+
+if(box){
+  const prasarana=Array.isArray(appData.ruangan)?appData.ruangan:[];
+  const sarana=Array.isArray(appData.barang)?appData.barang:[];
+
+  if(!prasarana.length){
+    box.innerHTML='<div class="empty">Belum ada data prasarana untuk dibuat laporan.</div>';
+  }else{
+    box.innerHTML=`
+      <div style="margin-bottom:12px">
+        <h1 style="margin:0 0 4px;font-size:18px">LAPORAN KESELURUHAN PER PRASARANA</h1>
+        <p style="margin:0;font-size:11px;color:#64748b">Setiap prasarana dibuat sebagai satu halaman laporan dan berisi sarana/barang di dalamnya.</p>
+      </div>
+      ${prasarana.map((r,i)=>{
+        const namaRoom=String(r.Nama_Ruangan||'').trim().toLowerCase();
+        const barangRoom=sarana.filter(b=>String(b.Ruangan||'').trim().toLowerCase()===namaRoom);
+        return `
+        <div class="report-room-page">
+          <div class="report-room-head">
+            <div><h1>${esc(r.Nama_Ruangan||'-')}</h1><p>LAPORAN PRASARANA DAN SARANA — Halaman ${i+1}</p></div>
+          </div>
+          <div class="report-room-detail">
+            <div><b>ID Prasarana</b>${esc(r.ID_Ruangan||'-')}</div>
+            <div><b>Panjang</b>${displayNumberRaw(r.Panjang)}</div>
+            <div><b>Lebar</b>${displayNumberRaw(r.Lebar)}</div>
+            <div><b>Tinggi</b>${displayNumberRaw(r.Tinggi)}</div>
+            <div><b>Luas</b>${displayNumberRaw(r.Luas)} m²</div>
+            <div><b>Jumlah Sarana</b>${r.Jumlah??0}</div>
+            <div><b>Kondisi</b>${esc(r.Kondisi||'-')}</div>
+            <div><b>Status Kepemilikan</b>${esc(r.Status_Kepemilikan||'-')}</div>
+            <div><b>Selasar</b>${esc(r.Selasar||'-')}</div>
+            <div style="grid-column:span 3"><b>Keterangan</b>${esc(r.Keterangan||'-')}</div>
+          </div>
+          <div class="report-room-section-title">📦 DATA SARANA / BARANG DI DALAM PRASARANA</div>
+          <div class="table-box"><table>
+            <thead><tr><th>No</th><th>Nama Barang</th><th>Kategori</th><th>Jumlah</th><th>Baik</th><th>Kurang Baik</th><th>Rusak Berat</th><th>Harga</th></tr></thead>
+            <tbody>${barangRoom.length ? barangRoom.map((b,j)=>`<tr><td>${j+1}</td><td style="text-align:left">${esc(b.Nama_Barang||'-')}</td><td style="text-align:left">${esc(b.Kategori||'-')}</td><td>${b.Jumlah??0}</td><td>${b.Baik??0}</td><td>${b.Kurang_Baik??0}</td><td>${b.Rusak_Berat??0}</td><td>${money(b.Harga)}</td></tr>`).join('') : '<tr><td colspan="8">Belum ada sarana/barang yang ditempatkan di prasarana ini.</td></tr>'}</tbody>
+          </table></div>
+
+          <div class="report-room-signature">
+            <div class="report-sign-date">Tanjung Pura, <span class="solid-line date-line"></span></div>
+            <div class="report-sign-grid">
+              <div class="report-sign-col">
+                <div class="report-sign-title"><b>Mengetahui:</b><br>Kepala Sekolah</div>
+                <div class="report-sign-space"></div>
+                <div class="report-sign-name">SUGANDI SANJAYA, S.PD</div>
+              </div>
+              <div class="report-sign-col">
+                <div class="report-sign-title"><b>Penj. Ruangan</b></div>
+                <div class="report-sign-space"></div>
+                <div><span class="solid-line room-line"></span></div>
+              </div>
+              <div class="report-sign-col">
+                <div class="report-sign-title"><b>PKS Bid. Sarana dan Prasarana</b></div>
+                <div class="report-sign-space"></div>
+                <div class="report-sign-name">SUSANTI, S.PD</div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+
+    `;
+  }
+}
+
+}
+
+function closeForm(){
+
+document.getElementById('formModal')
+.classList.remove('show');
+
+}
+
+
+/* =====================================================
+   UTIL
+===================================================== */
+
+function val(id){
+
+const el=document.getElementById(id);
+
+return el ? el.value : '';
+
+}
+
+
+function esc(v){
+
+return String(v??'')
+.replace(/&/g,'&amp;')
+.replace(/</g,'&lt;')
+.replace(/>/g,'&gt;')
+.replace(/"/g,'&quot;')
+.replace(/'/g,'&#039;');
+
+}
+
+
+function attr(v){
+return esc(v);
+}
+
+
+function money(v){
+
+const n=Number(v)||0;
+
+return 'Rp '+n.toLocaleString('id-ID');
+
+}
+
+
+
+/* =====================================================
+   QR CODE BARANG
+===================================================== */
+let qrStream = null;
+let qrScannerRunning = false;
+let qrScanTimer = null;
+let lastQrValue = '';
+let lastQrTime = 0;
+
+function setQrStatus(message, ok=false){
+  const el=document.getElementById('qrScanStatus');
+  if(!el) return;
+  el.innerHTML=(ok?'✅ ':'')+esc(message);
+}
+
+async function startQrScanner(){
+  const video=document.getElementById('qrVideo');
+  const canvas=document.getElementById('qrCanvas');
+  if(!video || !canvas) return;
+  if(qrScannerRunning) return;
+
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    setQrStatus('Browser tidak mendukung kamera. Gunakan Chrome/Edge terbaru atau tombol Scan dari Foto.');
+    return;
+  }
+
+  if(typeof jsQR==='undefined'){
+    setQrStatus('Library pembaca QR belum termuat. Periksa internet lalu refresh halaman.');
+    return;
+  }
+
+  try{
+    stopQrScanner();
+    setQrStatus('Meminta izin kamera...');
+
+    // Minta kamera belakang terlebih dahulu. Jika tidak tersedia, gunakan kamera apa pun.
+    let stream;
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({
+        video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},
+        audio:false
+      });
+    }catch(firstError){
+      stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+    }
+
+    qrStream=stream;
+    video.srcObject=stream;
+    video.setAttribute('playsinline','true');
+    video.muted=true;
+    await video.play();
+    qrScannerRunning=true;
+    setQrStatus('Kamera aktif. Arahkan QR ke kotak di tengah.', true);
+
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});
+    const scan=()=>{
+      if(!qrScannerRunning || video.readyState < 2){
+        qrScanTimer=requestAnimationFrame(scan);
+        return;
+      }
+      const w=video.videoWidth;
+      const h=video.videoHeight;
+      if(w && h){
+        canvas.width=w;
+        canvas.height=h;
+        ctx.drawImage(video,0,0,w,h);
+        const image=ctx.getImageData(0,0,w,h);
+        const code=jsQR(image.data,w,h,{inversionAttempts:'attemptBoth'});
+        if(code && code.data){
+          const now=Date.now();
+          if(code.data!==lastQrValue || now-lastQrTime>2500){
+            lastQrValue=code.data;
+            lastQrTime=now;
+            processQrScan(code.data);
+            setQrStatus('QR terbaca: '+code.data, true);
+          }
+        }
+      }
+      qrScanTimer=requestAnimationFrame(scan);
+    };
+    qrScanTimer=requestAnimationFrame(scan);
+  }catch(err){
+    console.error('CAMERA ERROR',err);
+    qrScannerRunning=false;
+    if(qrStream){qrStream.getTracks().forEach(t=>t.stop());qrStream=null;}
+    let msg=err && err.message ? err.message : String(err||'Kesalahan kamera');
+    if(err && (err.name==='NotAllowedError' || /permission|denied/i.test(msg))){
+      msg='Izin kamera ditolak. Klik ikon gembok di alamat browser → Kamera → Izinkan, lalu refresh halaman.';
+    }else if(err && (err.name==='NotFoundError' || /not found|no camera/i.test(msg))){
+      msg='Kamera tidak ditemukan. Pastikan kamera terpasang dan tidak sedang dipakai aplikasi lain.';
+    }else if(err && err.name==='NotReadableError'){
+      msg='Kamera sedang digunakan aplikasi lain. Tutup aplikasi kamera/Zoom/Meet lalu coba lagi.';
+    }else if(location.protocol!=='https:' && location.hostname!=='localhost'){
+      msg='Kamera membutuhkan HTTPS. Buka Web App menggunakan URL /exec Google Apps Script.';
+    }
+    setQrStatus(msg);
+  }
+}
+
+function stopQrScanner(){
+  qrScannerRunning=false;
+  if(qrScanTimer){cancelAnimationFrame(qrScanTimer);qrScanTimer=null;}
+  if(qrStream){
+    qrStream.getTracks().forEach(track=>{try{track.stop();}catch(e){}});
+    qrStream=null;
+  }
+  const video=document.getElementById('qrVideo');
+  if(video){
+    try{video.pause();}catch(e){}
+    video.srcObject=null;
+  }
+  const status=document.getElementById('qrScanStatus');
+  if(status) status.textContent='Kamera dihentikan.';
+}
+
+function processQrScan(value){
+  const status=document.getElementById('qrScanStatus');
+  const raw=String(value||'').trim();
+  if(!raw)return;
+
+  // 1. Coba QR Prasarana terlebih dahulu.
+  if(status) status.textContent='QR terbaca. Mencari prasarana dan sarana...';
+  google.script.run
+    .withSuccessHandler(roomResult=>{
+      if(roomResult && roomResult.success && roomResult.ruangan){
+        if(status) status.textContent='Prasarana ditemukan: '+roomResult.ruangan.Nama_Ruangan;
+        showPrasaranaScanResult(roomResult);
+        stopQrScanner();
+        return;
+      }
+
+      // 2. Kalau bukan QR prasarana, coba sebagai QR barang.
+      const barang=getBarangFromQrValue(raw);
+      if(barang){
+        if(status) status.textContent='Barang ditemukan: '+barang.Nama_Barang;
+        showQrResult(barang);
+        stopQrScanner();
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(r=>{
+          if(r && r.success && r.barang){
+            showQrResult(r.barang);
+            if(status) status.textContent='Barang ditemukan: '+r.barang.Nama_Barang;
+            stopQrScanner();
+          }else{
+            if(status) status.textContent='QR terbaca, tetapi data tidak ditemukan.';
+            showQrResult(null,raw);
+          }
+        })
+        .withFailureHandler(e=>{
+          if(status) status.textContent='Gagal mencari data QR di server.';
+          showQrResult(null,raw);
+          console.error(e);
+        })
+        .getBarangByQR(raw);
+    })
+    .withFailureHandler(e=>{
+      console.error(e);
+      // Jika lookup prasarana gagal, tetap coba QR barang.
+      const barang=getBarangFromQrValue(raw);
+      if(barang){
+        showQrResult(barang);
+        if(status) status.textContent='Barang ditemukan: '+barang.Nama_Barang;
+        stopQrScanner();
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(r=>{
+          if(r && r.success && r.barang){
+            showQrResult(r.barang);
+            if(status) status.textContent='Barang ditemukan: '+r.barang.Nama_Barang;
+            stopQrScanner();
+          }else{
+            if(status) status.textContent='Data QR tidak ditemukan.';
+            showQrResult(null,raw);
+          }
+        })
+        .getBarangByQR(raw);
+    })
+    .getPrasaranaScanData(raw);
+}
+
+function showPrasaranaScanResult(data){
+  const box=document.getElementById('qrResult');
+  if(!box)return;
+
+  const r=data.ruangan||{};
+  const barang=Array.isArray(data.barang)?data.barang:[];
+
+  let html=`
+    <div style="font-size:20px;font-weight:bold;margin-bottom:8px">🏫 ${esc(r.Nama_Ruangan||'-')}</div>
+    <div class="info" style="line-height:1.8">
+      🆔 ID Prasarana: <b>${esc(r.ID_Ruangan||'-')}</b><br>
+      📐 Ukuran: ${esc(r.Panjang||'-')} × ${esc(r.Lebar||'-')}<br>
+      📏 Tinggi: ${esc(r.Tinggi||'-')}<br>
+      🏗️ Selasar: ${esc(r.Selasar||'-')}<br>
+      🔧 Kondisi: ${esc(r.Kondisi||'-')}<br>
+      📦 Jumlah jenis sarana: <b>${barang.length}</b><br>
+      📷 Total dokumentasi: <b>${Number(data.totalDokumentasi||0)}</b>
+    </div>
+    <hr style="border:0;border-top:1px solid #e2e8f0;margin:14px 0">
+    <div style="font-size:17px;font-weight:bold;margin-bottom:10px">📦 Barang/Sarana di dalam Prasarana</div>
+  `;
+
+  if(!barang.length){
+    html += `<div class="empty">Belum ada data sarana yang ditempatkan di ruangan ini.</div>`;
+  }else{
+    html += `<div style="display:grid;gap:10px">`;
+    barang.forEach((b,i)=>{
+      html += `
+        <div style="border:1px solid #e2e8f0;border-radius:12px;padding:12px;background:#f8fafc">
+          <div style="font-weight:bold;font-size:16px">${i+1}. ${esc(b.Nama_Barang||'-')}</div>
+          <div style="font-size:13px;color:#475569;margin-top:5px;line-height:1.7">
+            🆔 ${esc(b.ID_Barang||'-')} &nbsp; | &nbsp; 🏷️ ${esc(b.Kode_Barang||'-')}<br>
+            🏢 Merk: ${esc(b.Merk||'-')} &nbsp; | &nbsp; 🔢 Jumlah: ${esc(b.Jumlah||0)}<br>
+            🔧 Baik: ${esc(b.Baik||0)} | Kurang Baik: ${esc(b.Kurang_Baik||0)} | Rusak: ${esc(b.Rusak_Berat||0)}
+          </div>
+          <div style="margin-top:8px;font-weight:bold">📷 Dokumentasi (${b.Dokumentasi?.length||0})</div>
+      `;
+
+      if(b.Dokumentasi && b.Dokumentasi.length){
+        html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:8px">`;
+        b.Dokumentasi.forEach(d=>{
+          if(d.Image){
+            html += `<div style="background:#fff;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0">
+              <img src="${d.Image}" style="width:100%;height:110px;object-fit:cover;display:block" alt="Dokumentasi">
+              <div style="font-size:11px;padding:6px;color:#475569">${esc(d.Keterangan||'Dokumentasi')}</div>
+            </div>`;
+          }else{
+            html += `<div style="padding:12px;font-size:12px;color:#64748b;background:#fff;border-radius:8px">Foto tidak tersedia</div>`;
+          }
+        });
+        html += `</div>`;
+      }else{
+        html += `<div style="font-size:12px;color:#64748b;margin-top:5px">Belum ada dokumentasi untuk barang ini.</div>`;
+      }
+
+      html += `
+          <div class="actions" style="margin-top:10px">
+            <button class="btn blue" onclick="openBarangForm('${attr(b.ID_Barang)}')">✏️ Edit</button>
+            <button class="btn yellow" onclick="showBarangQR('${attr(b.ID_Barang)}')">🔳 QR Barang</button>
+            <button class="btn green" onclick="openDoc('${attr(b.ID_Barang)}')">📷 Kelola Dokumentasi</button>
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  html += `
+    <div class="actions" style="margin-top:14px">
+      <button class="btn blue" onclick="openRoomEdit('${attr(r.ID_Ruangan)}')">✏️ Edit Prasarana</button>
+      <button class="btn yellow" onclick="showRoomQR('${attr(r.ID_Ruangan)}')">🔳 Lihat QR Prasarana</button>
+    </div>
+  `;
+
+  box.style.display='block';
+  box.innerHTML=html;
+}
+
+function scanQrImage(input){
+  const file=input && input.files ? input.files[0] : null;
+  if(!file) return;
+  if(typeof jsQR==='undefined'){
+    setQrStatus('Library pembaca QR belum termuat.');
+    return;
+  }
+  const img=new Image();
+  const url=URL.createObjectURL(file);
+  img.onload=function(){
+    try{
+      const canvas=document.createElement('canvas');
+      const max=1800;
+      const scale=Math.min(1,max/Math.max(img.width,img.height));
+      canvas.width=Math.max(1,Math.floor(img.width*scale));
+      canvas.height=Math.max(1,Math.floor(img.height*scale));
+      const ctx=canvas.getContext('2d',{willReadFrequently:true});
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      const data=ctx.getImageData(0,0,canvas.width,canvas.height);
+      const code=jsQR(data.data,canvas.width,canvas.height,{inversionAttempts:'attemptBoth'});
+      if(code && code.data){
+        setQrStatus('QR dari foto terbaca: '+code.data,true);
+        processQrScan(code.data);
+      }else{
+        setQrStatus('QR tidak ditemukan pada foto. Coba foto lebih dekat dan jelas.');
+      }
+    }finally{
+      URL.revokeObjectURL(url);
+      input.value='';
+    }
+  };
+  img.onerror=function(){
+    URL.revokeObjectURL(url);
+    input.value='';
+    setQrStatus('Foto tidak dapat dibaca.');
+  };
+  img.src=url;
+}
+
+function searchQrManual(){
+  const input=document.getElementById('qrManual');
+  const value=input?.value.trim()||'';
+  if(!value){alert('Masukkan ID atau Kode Barang.');return;}
+  processQrScan(value);
+}
+
+function showQrResult(b,raw=''){
+  const box=document.getElementById('qrResult');
+  if(!box)return;
+
+  if(!b){
+    box.style.display='block';
+    box.innerHTML=`<b>❌ Barang tidak ditemukan</b><div style="margin-top:6px;font-size:12px">Nilai QR: ${esc(raw)}</div>`;
+    return;
+  }
+
+  box.style.display='block';
+  box.innerHTML=`
+    <div style="font-size:18px;font-weight:bold">📦 ${esc(b.Nama_Barang||'-')}</div>
+    <div class="info">
+      🆔 ID: <b>${esc(b.ID_Barang||'-')}</b><br>
+      🏷️ Kode: <b>${esc(b.Kode_Barang||'-')}</b><br>
+      🏫 Ruangan: ${esc(b.Ruangan||'-')}<br>
+      🔢 Jumlah: ${esc(b.Jumlah||0)}<br>
+      🔧 Kondisi: Baik ${esc(b.Baik||0)} / Kurang ${esc(b.Kurang_Baik||0)} / Rusak ${esc(b.Rusak_Berat||0)}
+    </div>
+    <div class="actions">
+      <button class="btn blue" onclick="openBarangForm('${attr(b.ID_Barang)}')">✏️ Edit Barang</button>
+      <button class="btn yellow" onclick="showBarangQR('${attr(b.ID_Barang)}')">🔳 Lihat QR</button>
+      <button class="btn green" onclick="openDoc('${attr(b.ID_Barang)}')">📷 Dokumentasi</button>
+    </div>
+  `;
+}
+
+let currentQrPrintData={value:'',jenis:'QR',nama:''};
+
+function makeQR(text,target){
+  target.innerHTML='';
+  if(typeof QRCode==='undefined'){target.innerHTML='<div class="empty">Library QR belum dimuat.</div>';return false;}
+  try{
+    // QR memuat teks data lengkap agar kamera HP menampilkan informasinya,
+    // bukan hanya ID. Gunakan level koreksi M agar mudah dipindai.
+    new QRCode(target,{text:String(text),width:320,height:320,correctLevel:QRCode.CorrectLevel.M});
+    return true;
+  }catch(e){target.innerHTML='<div class="empty">QR gagal dibuat. Kurangi panjang data atau coba lagi.</div>';return false;}
+}
+
+function qrTextValue(value){
+  if(value===null || value===undefined || String(value).trim()==='') return '-';
+  return String(value).trim();
+}
+
+function buildBarangQrText(b){
+  const fields=[
+    'INVENTARIS SMK SRI LANGKAT',
+    'JENIS: BARANG / SARANA',
+    'ID_Barang: '+qrTextValue(b.ID_Barang),
+    'Nama Barang: '+qrTextValue(b.Nama_Barang),
+    'Merk: '+qrTextValue(b.Merk),
+    'No Seri: '+qrTextValue(b.No_Seri),
+    'Ukuran: '+qrTextValue(b.Ukuran),
+    'Bahan: '+qrTextValue(b.Bahan),
+    'Tahun: '+qrTextValue(b.Tahun),
+    'Kode Barang: '+qrTextValue(b.Kode_Barang),
+    'Jumlah: '+qrTextValue(b.Jumlah),
+    'Harga: '+qrTextValue(b.Harga),
+    'Kondisi Baik: '+qrTextValue(b.Baik),
+    'Kondisi Kurang Baik: '+qrTextValue(b.Kurang_Baik),
+    'Kondisi Rusak Berat: '+qrTextValue(b.Rusak_Berat),
+    'Ruangan: '+qrTextValue(b.Ruangan),
+    'Keterangan: '+qrTextValue(b.Keterangan)
+  ];
+  return fields.join('\\n');
+}
+
+function buildRoomQrText(r){
+  const fields=[
+    'INVENTARIS SMK SRI LANGKAT',
+    'JENIS: PRASARANA / RUANGAN',
+    'ID Prasarana: '+qrTextValue(r.ID_Ruangan),
+    'Nama Ruangan: '+qrTextValue(r.Nama_Ruangan),
+    'Panjang: '+qrTextValue(r.Panjang),
+    'Lebar: '+qrTextValue(r.Lebar),
+    'Tinggi: '+qrTextValue(r.Tinggi),
+    'Luas: '+qrTextValue(r.Luas),
+    'Selasar: '+qrTextValue(r.Selasar),
+    'Jumlah: '+qrTextValue(r.Jumlah),
+    'Kondisi: '+qrTextValue(r.Kondisi),
+    'Status Kepemilikan: '+qrTextValue(r.Status_Kepemilikan),
+    'Keterangan: '+qrTextValue(r.Keterangan)
+  ];
+  return fields.join('\\n');
+}
+
+function cetakPrasarana(id){
+  const room=appData.ruangan.find(r=>String(r.ID_Ruangan)===String(id));
+  if(!room){alert('Data prasarana tidak ditemukan.');return;}
+
+  const roomName=String(room.Nama_Ruangan||'').trim().toLowerCase();
+  const barang=Array.isArray(appData.barang)
+    ? appData.barang.filter(b=>String(b.Ruangan||'').trim().toLowerCase()===roomName)
+    : [];
+
+  /*
+   * Buka jendela cetak terlebih dahulu supaya popup tidak diblokir.
+   * Setelah itu dokumentasi setiap sarana diambil dari Google Drive.
+   */
+  const win=window.open('','_blank','width=1100,height=800');
+  if(!win){
+    alert('Popup diblokir browser. Izinkan popup untuk mencetak laporan.');
+    return;
+  }
+
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Memuat Laporan...</title></head><body style="font-family:Arial;text-align:center;padding:40px">⏳ Menyiapkan laporan dan gambar sarana...</body></html>`);
+  win.document.close();
+
+  /* Ambil semua dokumentasi sarana secara paralel. */
+  const loadDocsForBarang=(b)=>new Promise(resolve=>{
+    google.script.run
+      .withSuccessHandler(docs=>resolve(Array.isArray(docs)?docs:[]))
+      .withFailureHandler(()=>resolve([]))
+      .getDokumentasiSarana(b.Ruangan,b.Nama_Barang);
+  });
+
+  Promise.all(barang.map(async b=>({barang:b,docs:await loadDocsForBarang(b)})))
+    .then(items=>{
+      const rows=items.length
+        ? items.map((item,i)=>{
+            const b=item.barang;
+            const docs=item.docs||[];
+            const images=docs
+              .filter(d=>d && d.Image)
+              .map(d=>`<img src="${d.Image}" alt="Dokumentasi ${esc(b.Nama_Barang||'Sarana')}" class="sarana-photo">`)
+              .join('');
+            const photoCell=images
+              ? `<div class="photo-list">${images}</div>`
+              : '<span class="no-photo">-</span>';
+
+            return `<tr>
+              <td>${i+1}</td>
+              <td>${esc(b.Nama_Barang||'-')}</td>
+              <td>${esc(b.Kategori||'-')}</td>
+              <td>${b.Jumlah??0}</td>
+              <td>${b.Baik??0}</td>
+              <td>${b.Kurang_Baik??0}</td>
+              <td>${b.Rusak_Berat??0}</td>
+              <td>${money(b.Harga)}</td>
+              <td class="photo-cell">${photoCell}</td>
+            </tr>`;
+          }).join('')
+        : '<tr><td colspan="9">Belum ada sarana/barang di prasarana ini.</td></tr>';
+
+      win.document.open();
+      win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Laporan ${esc(room.Nama_Ruangan||'Prasarana')}</title>
+      <style>
+      @page{size:A4 landscape;margin:10mm 10mm 12mm 10mm}
+      *{box-sizing:border-box}
+      body{font-family:Arial,Helvetica,sans-serif;color:#000;margin:0;font-size:10px}
+      h1{font-size:18px;text-align:center;margin:0 0 4px}
+      .subtitle{text-align:center;font-size:11px;margin:0 0 12px}
+      .detail{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+      .detail div{border:1px solid #555;padding:6px 7px;min-height:30px}
+      .detail b{display:block;margin-bottom:2px}
+      .wide{grid-column:span 3}
+      h2{font-size:13px;margin:10px 0 6px}
+      table{width:100%;border-collapse:collapse;table-layout:fixed}
+      th,td{border:1px solid #555;padding:4px;text-align:center;vertical-align:middle}
+      th{font-weight:bold}
+      td:nth-child(2),td:nth-child(3){text-align:left}
+      th:nth-child(1){width:4%}
+      th:nth-child(2){width:16%}
+      th:nth-child(3){width:12%}
+      th:nth-child(4){width:7%}
+      th:nth-child(5),th:nth-child(6),th:nth-child(7){width:8%}
+      th:nth-child(8){width:12%}
+      th:nth-child(9){width:17%}
+      .photo-cell{padding:3px!important}
+      .photo-list{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px}
+      .sarana-photo{width:48px;height:48px;object-fit:cover;border:1px solid #777;border-radius:2px;display:block}
+      .no-photo{font-size:9px;color:#555}
+      .footer{position:static;width:100%;margin-top:8mm;padding-top:2mm;background:#fff;page-break-inside:avoid;break-inside:avoid}
+      .date{text-align:right;margin-bottom:3mm}
+      .date-line{display:inline-block;width:42mm;border-bottom:1px solid #000;height:4mm;vertical-align:bottom}
+      .sign{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12mm}
+      .signcol{text-align:left}
+      .space{height:11mm}
+      .name{font-weight:bold;display:block;min-height:12px}
+      .room-line{display:inline-block;width:38mm;border-bottom:1px solid #000;height:4mm;vertical-align:bottom}
+      tr{page-break-inside:avoid;break-inside:avoid}
+      </style></head><body>
+      <h1>LAPORAN PRASARANA DAN SARANA</h1>
+      <div class="subtitle">${esc(room.Nama_Ruangan||'-')}</div>
+      <div class="detail">
+        <div><b>ID Prasarana</b>${esc(room.ID_Ruangan||'-')}</div>
+        <div><b>Panjang</b>${displayNumberRaw(room.Panjang)}</div>
+        <div><b>Lebar</b>${displayNumberRaw(room.Lebar)}</div>
+        <div><b>Tinggi</b>${displayNumberRaw(room.Tinggi)}</div>
+        <div><b>Luas</b>${displayNumberRaw(room.Luas)} m²</div>
+        <div><b>Jumlah Sarana</b>${room.Jumlah??0}</div>
+        <div><b>Kondisi</b>${esc(room.Kondisi||'-')}</div>
+        <div><b>Status Kepemilikan</b>${esc(room.Status_Kepemilikan||'-')}</div>
+        <div><b>Selasar</b>${esc(room.Selasar||'-')}</div>
+        <div class="wide"><b>Keterangan</b>${esc(room.Keterangan||'-')}</div>
+      </div>
+      <h2>DATA SARANA / BARANG DI DALAM PRASARANA</h2>
+      <table>
+        <thead><tr><th>No</th><th>Nama Barang</th><th>Kategori</th><th>Jumlah</th><th>Baik</th><th>Kurang Baik</th><th>Rusak Berat</th><th>Harga</th><th>Dokumentasi</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="footer">
+        <div class="date">Tanjung Pura, <span class="date-line"></span></div>
+        <div class="sign">
+          <div class="signcol"><b>Mengetahui:</b><br>Kepala Sekolah<div class="space"></div><div class="name">SUGANDI SANJAYA, S.PD</div></div>
+          <div class="signcol"><b>Penj. Ruangan</b><div class="space"></div><div>( <span class="room-line"></span> )</div></div>
+          <div class="signcol"><b>PKS Bid. Sarana dan Prasarana</b><div class="space"></div><div class="name">SUSANTI, S.PD</div></div>
+        </div>
+      </div>
+      </body></html>`);
+      win.document.close();
+      setTimeout(()=>win.print(),500);
+    })
+    .catch(err=>{
+      console.error(err);
+      win.document.open();
+      win.document.write('<p style="font-family:Arial;padding:30px">Gagal menyiapkan dokumentasi gambar.</p>');
+      win.document.close();
+    });
+}
+function showBarangQR(id){
+  const b=appData.barang.find(x=>String(x.ID_Barang)===String(id));
+  if(!b)return alert('Data barang tidak ditemukan.');
+  const payload=buildBarangQrText(b);
+  currentQrPrintData={value:String(b.ID_Barang||''),payload:payload,jenis:'QR Barang',nama:String(b.Nama_Barang||'Barang')};
+  document.getElementById('qrModalTitle').textContent='🔳 QR Code Barang';
+  document.getElementById('qrModalHint').textContent='Scan QR ini untuk mencari data barang.';
+  document.getElementById('qrBarangName').textContent=b.Nama_Barang||'-';
+  document.getElementById('qrBarangCode').textContent='ID: '+(b.ID_Barang||'-')+' | Kode: '+(b.Kode_Barang||'-');
+  const t=document.getElementById('qrCodeCanvas');
+  document.getElementById('qrModal').classList.add('show');
+  makeQR(payload,t);
+}
+
+function showRoomQR(id){
+  const r=appData.ruangan.find(x=>String(x.ID_Ruangan)===String(id));
+  if(!r)return alert('Data prasarana tidak ditemukan.');
+  const payload=buildRoomQrText(r);
+  currentQrPrintData={value:String(r.ID_Ruangan||''),payload:payload,jenis:'QR Prasarana',nama:String(r.Nama_Ruangan||'Prasarana')};
+  document.getElementById('qrModalTitle').textContent='🔳 QR Code Prasarana';
+  document.getElementById('qrBarangName').textContent=r.Nama_Ruangan||'-';
+  document.getElementById('qrBarangCode').textContent='ID Prasarana: '+(r.ID_Ruangan||'-');
+  document.getElementById('qrModalHint').textContent='Scan QR ini untuk mencari data prasarana.';
+  document.getElementById('qrModal').classList.add('show');
+  makeQR(payload,document.getElementById('qrCodeCanvas'));
+}
+
+function closeQrModal(){document.getElementById('qrModal').classList.remove('show');}
+
+function qrDataUrl(){
+  const box=document.getElementById('qrCodeCanvas');
+  const c=box.querySelector('canvas');
+  if(c)return c.toDataURL('image/png');
+  const img=box.querySelector('img');
+  if(img&&img.src.startsWith('data:image/'))return img.src;
+  return '';
+}
+
+function printBarangQR(){
+  const q=currentQrPrintData||{};
+  if(!q.value)return alert('QR belum siap.');
+  const dataUrl=qrDataUrl();
+  if(!dataUrl)return alert('QR belum selesai dibuat.');
+  const btn=document.querySelector('#qrModal button.btn.blue'),old=btn?btn.innerHTML:'';
+  if(btn){btn.disabled=true;btn.innerHTML='⏳ Menyimpan...';}
+  google.script.run.withSuccessHandler(r=>{
+    if(btn){btn.disabled=false;btn.innerHTML=old;}
+    if(!r||!r.success)return alert(r?.message||'QR gagal disimpan.');
+    document.body.classList.add('qr-printing');
+    setTimeout(()=>{window.print();setTimeout(()=>document.body.classList.remove('qr-printing'),500)},150);
+  }).withFailureHandler(e=>{
+    if(btn){btn.disabled=false;btn.innerHTML=old;}
+    alert('Gagal menyimpan QR: '+(e?.message||e));
+  }).saveQrCodeToDrive(dataUrl,q.value,q.jenis,q.nama);
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1938 @@
+/**
+ * =========================================================
+ * SISTEM INVENTARIS SMK SRI LANGKAT
+ * GOOGLE APPS SCRIPT - FULL VERSION
+ * =========================================================
+ */
+
+const DB = {
+  USERS: 'Users',
+  BARANG: 'Barang',
+  RUANGAN: 'Ruangan',
+  KELAS: 'Kelas',
+  TRANSAKSI: 'Transaksi',
+  PEMINJAMAN: 'Peminjaman',
+  DOKUMENTASI: 'Dokumentasi',
+  FOLDER: 'Inventaris SMK Sri Langkat - Dokumentasi'
+};
+
+/* =========================================================
+   WEB APP
+========================================================= */
+
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('index')
+    .setTitle('Inventaris SMK Sri Langkat')
+    .addMetaTag('viewport','width=device-width,initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+/* =========================================================
+   DATABASE
+========================================================= */
+
+function setupDatabase() {
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // MIGRASI TRANSAKSI LAMA
+  // Struktur lama: ... | Jumlah | Keterangan
+  // Struktur baru: ... | Jumlah | Harga | Keterangan
+  const trxSheet = ss.getSheetByName(DB.TRANSAKSI);
+  if(trxSheet && trxSheet.getLastRow() >= 1 && trxSheet.getLastColumn() >= 7){
+    const lastCol = trxSheet.getLastColumn();
+    const hdr = trxSheet.getRange(1,1,1,lastCol).getValues()[0].map(v=>String(v||'').trim());
+    const oldSeven =
+      hdr[0] === 'ID_Transaksi' &&
+      hdr[5] === 'Jumlah' &&
+      hdr[6] === 'Keterangan' &&
+      hdr[7] !== 'Harga';
+
+    if(oldSeven){
+      const rows = trxSheet.getLastRow();
+      let oldKeterangan = [];
+
+      if(rows > 1){
+        oldKeterangan = trxSheet.getRange(2,7,rows-1,1).getValues();
+      }
+
+      // Sisipkan kolom Harga di G. Kolom Keterangan lama otomatis bergeser ke H.
+      trxSheet.insertColumnBefore(7);
+      trxSheet.getRange(1,7).setValue('Harga');
+      trxSheet.getRange(1,8).setValue('Keterangan');
+
+      if(rows > 1){
+        const harga = [];
+        const ket = [];
+
+        oldKeterangan.forEach(r=>{
+          const v = r[0];
+          const raw = String(v ?? '').trim();
+          const cleaned = raw.replace(/[^0-9.-]/g,'');
+          const numeric = raw !== '' && cleaned !== '' && !isNaN(Number(cleaned));
+
+          if(numeric){
+            harga.push([Number(cleaned)]);
+            ket.push(['']);
+          }else{
+            harga.push(['']);
+            ket.push([v || '']);
+          }
+        });
+
+        trxSheet.getRange(2,7,rows-1,1).setValues(harga);
+        trxSheet.getRange(2,8,rows-1,1).setValues(ket);
+      }
+    }
+  }
+
+  const configs = [
+
+    {
+      name: DB.USERS,
+      headers: ['Username','Password','Nama','Role'],
+      initialData: [
+        ['admin','admin123','Administrator SMK Sri Langkat','Admin']
+      ]
+    },
+
+    {
+      name: DB.BARANG,
+      headers: [
+        'ID_Barang',
+        'Nama_Barang',
+        'Merk',
+        'No_Seri',
+        'Ukuran',
+        'Bahan',
+        'Tahun',
+        'Kode_Barang',
+        'Jumlah',
+        'Harga',
+        'Baik',
+        'Kurang_Baik',
+        'Rusak_Berat',
+        'Ruangan',
+        'Keterangan'
+      ]
+    },
+
+    {
+      name: DB.RUANGAN,
+      headers: [
+        'ID_Ruangan',
+        'Nama_Ruangan',
+        'Panjang',
+        'Lebar',
+        'Jumlah',
+        'Kondisi',
+        'Status_Kepemilikan',
+        'Keterangan',
+        'Selasar',
+        'Tinggi',
+        'Luas'
+      ]
+    },
+
+    {
+      name: DB.KELAS,
+      headers: [
+        'ID_Kelas',
+        'Nama_Kelas',
+        'Ruangan',
+        'Keterangan'
+      ]
+    },
+
+    {
+      name: DB.TRANSAKSI,
+      headers: [
+        'ID_Transaksi',
+        'Tanggal',
+        'Jenis',
+        'ID_Barang',
+        'Nama_Barang',
+        'Jumlah',
+        'Harga',
+        'Keterangan'
+      ]
+    },
+
+    {
+      name: DB.PEMINJAMAN,
+      headers: [
+        'ID_Pinjam',
+        'Tanggal_Pinjam',
+        'Nama_Peminjam',
+        'ID_Barang',
+        'Nama_Barang',
+        'Jumlah',
+        'Tanggal_Kembali',
+        'Status'
+      ]
+    },
+
+    {
+      name: DB.DOKUMENTASI,
+      headers: [
+        'ID_Dok',
+        'Ruangan',
+        'Nama_Barang',
+        'Foto',
+        'Keterangan',
+        'File_ID'
+      ]
+    }
+
+  ];
+
+  configs.forEach(c => {
+
+    let sh = ss.getSheetByName(c.name);
+
+    if (!sh) {
+
+      sh = ss.insertSheet(c.name);
+
+      sh.getRange(1,1,1,c.headers.length)
+        .setValues([c.headers]);
+
+      formatHeader(sh,c.headers.length);
+
+      if (c.initialData) {
+
+        sh.getRange(
+          2,
+          1,
+          c.initialData.length,
+          c.headers.length
+        ).setValues(c.initialData);
+
+      }
+
+    } else {
+
+      const oldHeaders =
+        sh.getRange(
+          1,
+          1,
+          1,
+          c.headers.length
+        ).getValues()[0];
+
+      let different = false;
+
+      for(let i=0;i<c.headers.length;i++){
+
+        if(oldHeaders[i] !== c.headers[i]){
+          different = true;
+          break;
+        }
+
+      }
+
+      if(different){
+
+        sh.getRange(
+          1,
+          1,
+          1,
+          c.headers.length
+        ).setValues([c.headers]);
+
+      }
+
+      formatHeader(sh,c.headers.length);
+
+    }
+
+    sh.autoResizeColumns(
+      1,
+      c.headers.length
+    );
+
+  });
+
+  return 'Database berhasil disiapkan!';
+}
+
+
+function formatHeader(sh,cols){
+
+  sh.getRange(1,1,1,cols)
+    .setFontWeight('bold')
+    .setBackground('#102a5c')
+    .setFontColor('#ffffff');
+
+  sh.setFrozenRows(1);
+
+}
+
+
+function ensureDatabase(){
+
+  const ss =
+    SpreadsheetApp.getActiveSpreadsheet();
+
+  if(!ss.getSheetByName(DB.USERS)){
+    setupDatabase();
+  } else {
+    const required = [
+      DB.BARANG,
+      DB.RUANGAN,
+      DB.KELAS,
+      DB.TRANSAKSI,
+      DB.PEMINJAMAN,
+      DB.DOKUMENTASI
+    ];
+
+    const missing = required.some(
+      n => !ss.getSheetByName(n)
+    );
+
+    if(missing){
+      setupDatabase();
+    }
+  }
+
+  // Selalu pastikan struktur sheet Transaksi benar.
+  // Ini penting agar Harga tidak lagi masuk ke Keterangan,
+  // termasuk jika pengguna belum menjalankan setupDatabase manual.
+  ensureTransactionSchema_();
+
+}
+
+
+function ensureTransactionSchema_(){
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName(DB.TRANSAKSI);
+
+  if(!sh){
+    return;
+  }
+
+  const lastCol = sh.getLastColumn();
+  if(lastCol < 7){
+    sh.getRange(1,1,1,8).setValues([[
+      'ID_Transaksi',
+      'Tanggal',
+      'Jenis',
+      'ID_Barang',
+      'Nama_Barang',
+      'Jumlah',
+      'Harga',
+      'Keterangan'
+    ]]);
+    return;
+  }
+
+  let headers = sh.getRange(1,1,1,Math.max(8,lastCol))
+    .getValues()[0]
+    .map(v => String(v ?? '').trim());
+
+  // Struktur lama: kolom G adalah Keterangan.
+  // Sisipkan Harga sebelum Keterangan agar data lama tetap aman.
+  if(headers[0] === 'ID_Transaksi' &&
+     headers[5] === 'Jumlah' &&
+     headers[6] === 'Keterangan' &&
+     headers[7] !== 'Keterangan'){
+
+    const rows = sh.getLastRow();
+    const oldKet = rows > 1
+      ? sh.getRange(2,7,rows-1,1).getValues()
+      : [];
+
+    sh.insertColumnBefore(7);
+    sh.getRange(1,7).setValue('Harga');
+    sh.getRange(1,8).setValue('Keterangan');
+
+    if(rows > 1){
+      const harga = [];
+      const ket = [];
+
+      oldKet.forEach(r => {
+        const value = r[0];
+        const raw = String(value ?? '').trim();
+        const cleaned = raw.replace(/[^0-9.-]/g,'');
+        const numeric = raw !== '' && cleaned !== '' && !isNaN(Number(cleaned));
+
+        if(numeric){
+          harga.push([Number(cleaned)]);
+          ket.push(['']);
+        }else{
+          harga.push(['']);
+          ket.push([value || '']);
+        }
+      });
+
+      sh.getRange(2,7,harga.length,1).setValues(harga);
+      sh.getRange(2,8,ket.length,1).setValues(ket);
+    }
+
+    return;
+  }
+
+  // Jika Harga sudah berada di G tetapi Keterangan belum ada di H.
+  if(headers[0] === 'ID_Transaksi' &&
+     headers[5] === 'Jumlah' &&
+     headers[6] === 'Harga' &&
+     headers[7] !== 'Keterangan'){
+    sh.getRange(1,8).setValue('Keterangan');
+  }
+
+}
+
+
+/* =========================================================
+   GENERIC DATA
+========================================================= */
+
+/*
+ * Mengubah nilai Spreadsheet menjadi tipe yang aman dikirim ke HTML.
+ * Google Apps Script tidak selalu dapat mengirim objek Date langsung
+ * melalui google.script.run. Karena itu tanggal diubah menjadi teks.
+ */
+function serializeCellValue_(value){
+
+  if(value instanceof Date){
+    if(isNaN(value.getTime())) return '';
+
+    return Utilities.formatDate(
+      value,
+      Session.getScriptTimeZone() || 'Asia/Jakarta',
+      'yyyy-MM-dd HH:mm:ss'
+    );
+  }
+
+  if(value === null || value === undefined){
+    return '';
+  }
+
+  return value;
+}
+
+
+/*
+ * Pastikan seluruh objek hasil pembacaan Spreadsheet aman dikirim
+ * melalui google.script.run. Fungsi ini tidak mengubah Spreadsheet.
+ */
+function makeSerializable_(value){
+
+  if(value instanceof Date){
+    return serializeCellValue_(value);
+  }
+
+  if(Array.isArray(value)){
+    return value.map(makeSerializable_);
+  }
+
+  if(value && typeof value === 'object'){
+    const result = {};
+
+    Object.keys(value).forEach(key=>{
+      result[key] = makeSerializable_(value[key]);
+    });
+
+    return result;
+  }
+
+  return value;
+}
+
+
+function getSheetData(name){
+
+  const sh =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(name);
+
+  if(!sh || sh.getLastRow() <= 1){
+    return [];
+  }
+
+  const lastRow = sh.getLastRow();
+  const lastCol = sh.getLastColumn();
+
+  if(lastRow < 2 || lastCol < 1){
+    return [];
+  }
+
+  const data =
+    sh.getRange(1,1,lastRow,lastCol).getValues();
+
+  const headers = data[0].map(h =>
+    String(h ?? '').trim()
+  );
+
+  return data.slice(1)
+    .filter(row =>
+      row.some(value =>
+        value !== '' && value !== null && value !== undefined
+      )
+    )
+    .map(row => {
+
+      const obj = {};
+
+      headers.forEach((h,i)=>{
+        if(h){
+          obj[h] = serializeCellValue_(row[i]);
+        }
+      });
+
+      return obj;
+
+    });
+}
+
+
+/*
+ * PEMBACA KHUSUS DATA RUANGAN
+ *
+ * Mengembalikan field dengan nama yang SELALU sama:
+ * Selasar, Tinggi, Luas.
+ *
+ * Selain membaca header, I/J/K juga dipakai sebagai fallback
+ * sesuai struktur spreadsheet pengguna:
+ * I = Selasar, J = Tinggi, K = Luas.
+ *
+ * Jadi jika header Selasar memiliki spasi tersembunyi/perbedaan
+ * penulisan, data tetap muncul di aplikasi.
+ */
+function getRuanganData(){
+
+  const sh =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(DB.RUANGAN);
+
+  if(!sh){
+    throw new Error(
+      'Sheet "Ruangan" tidak ditemukan.'
+    );
+  }
+
+  const lastRow =
+    sh.getLastRow();
+
+  const lastCol =
+    Math.max(
+      sh.getLastColumn(),
+      11
+    );
+
+  if(lastRow < 2){
+    return [];
+  }
+
+  const values =
+    sh.getRange(
+      1,
+      1,
+      lastRow,
+      lastCol
+    ).getValues();
+
+  const headers =
+    values[0].map(h =>
+      String(h ?? '')
+        .trim()
+        .toLowerCase()
+    );
+
+  const findHeader = (...names) => {
+
+    for(const name of names){
+
+      const idx =
+        headers.indexOf(
+          String(name)
+            .trim()
+            .toLowerCase()
+        );
+
+      if(idx >= 0){
+        return idx;
+      }
+    }
+
+    return -1;
+  };
+
+  const idx = {
+
+    id:
+      findHeader('ID_Ruangan'),
+
+    nama:
+      findHeader('Nama_Ruangan'),
+
+    panjang:
+      findHeader('Panjang'),
+
+    lebar:
+      findHeader('Lebar'),
+
+    jumlah:
+      findHeader('Jumlah'),
+
+    kondisi:
+      findHeader('Kondisi'),
+
+    status:
+      findHeader('Status_Kepemilikan'),
+
+    keterangan:
+      findHeader('Keterangan'),
+
+    selasar:
+      findHeader('Selasar'),
+
+    tinggi:
+      findHeader('Tinggi'),
+
+    luas:
+      findHeader('Luas')
+
+  };
+
+  /*
+   * Fallback posisi kolom berdasarkan tabel Anda.
+   * Ini hanya untuk membaca, tidak mengubah sheet.
+   */
+  const col = {
+
+    id:      idx.id >= 0 ? idx.id : 0,
+    nama:    idx.nama >= 0 ? idx.nama : 1,
+    panjang: idx.panjang >= 0 ? idx.panjang : 2,
+    lebar:   idx.lebar >= 0 ? idx.lebar : 3,
+    jumlah:  idx.jumlah >= 0 ? idx.jumlah : 4,
+    kondisi: idx.kondisi >= 0 ? idx.kondisi : 5,
+    status:  idx.status >= 0 ? idx.status : 6,
+    keterangan: idx.keterangan >= 0 ? idx.keterangan : 7,
+
+    /*
+     * I/J/K = 8/9/10.
+     */
+    selasar: idx.selasar >= 0 ? idx.selasar : 8,
+    tinggi:  idx.tinggi  >= 0 ? idx.tinggi  : 9,
+    luas:    idx.luas    >= 0 ? idx.luas    : 10
+
+  };
+
+  return values
+    .slice(1)
+    .map(row => ({
+
+      ID_Ruangan:
+        serializeCellValue_(row[col.id]),
+
+      Nama_Ruangan:
+        serializeCellValue_(row[col.nama]),
+
+      Panjang:
+        serializeCellValue_(row[col.panjang]),
+
+      Lebar:
+        serializeCellValue_(row[col.lebar]),
+
+      Jumlah:
+        serializeCellValue_(row[col.jumlah]),
+
+      Kondisi:
+        serializeCellValue_(row[col.kondisi]),
+
+      Status_Kepemilikan:
+        serializeCellValue_(row[col.status]),
+
+      Keterangan:
+        serializeCellValue_(row[col.keterangan]),
+
+      Selasar:
+        serializeCellValue_(row[col.selasar]),
+
+      Tinggi:
+        serializeCellValue_(row[col.tinggi]),
+
+      Luas:
+        serializeCellValue_(row[col.luas])
+
+    }))
+    .filter(r =>
+      String(
+        r.Nama_Ruangan ?? ''
+      ).trim() !== ''
+    );
+}
+
+
+function getTransaksiData(){
+
+  ensureDatabase();
+
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(DB.TRANSAKSI);
+  if(!sh || sh.getLastRow() <= 1) return [];
+
+  const lastRow = sh.getLastRow();
+  const lastCol = Math.max(8, sh.getLastColumn());
+  const values = sh.getRange(1,1,lastRow,lastCol).getValues();
+  const headers = values[0].map(h => String(h ?? '').trim());
+
+  const idx = name => headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
+  const iId = idx('ID_Transaksi');
+  const iTanggal = idx('Tanggal');
+  const iJenis = idx('Jenis');
+  const iIdBarang = idx('ID_Barang');
+  const iNamaBarang = idx('Nama_Barang');
+  const iJumlah = idx('Jumlah');
+  const iHarga = idx('Harga');
+  const iKet = idx('Keterangan');
+
+  return values.slice(1).filter(row => row.some(v => v !== '' && v !== null && v !== undefined)).map(row => ({
+    ID_Transaksi: serializeCellValue_(iId >= 0 ? row[iId] : ''),
+    Tanggal: serializeCellValue_(iTanggal >= 0 ? row[iTanggal] : ''),
+    Jenis: serializeCellValue_(iJenis >= 0 ? row[iJenis] : ''),
+    ID_Barang: serializeCellValue_(iIdBarang >= 0 ? row[iIdBarang] : ''),
+    Nama_Barang: serializeCellValue_(iNamaBarang >= 0 ? row[iNamaBarang] : ''),
+    Jumlah: serializeCellValue_(iJumlah >= 0 ? row[iJumlah] : 0),
+    Harga: serializeCellValue_(iHarga >= 0 ? row[iHarga] : 0),
+    Keterangan: serializeCellValue_(iKet >= 0 ? row[iKet] : '')
+  }));
+}
+
+
+function getAllData(){
+
+  ensureDatabase();
+
+  /*
+   * Setiap tabel dibaca secara terpisah. Jika satu sheet bermasalah,
+   * sheet lain tetap dikirim ke aplikasi sehingga seluruh data tidak
+   * ikut terlihat kosong. Error tetap dicatat di log Apps Script.
+   */
+  const safe = (label, fn) => {
+
+    try{
+      return makeSerializable_(fn());
+    }catch(error){
+      console.error('Gagal membaca '+label+': '+error.message);
+      return [];
+    }
+  };
+
+  return makeSerializable_({
+    barang: safe('Barang', () => getSheetData(DB.BARANG)),
+    ruangan: safe('Ruangan', () => getRuanganData()),
+    kelas: safe('Kelas', () => getSheetData(DB.KELAS)),
+    transaksi: safe('Transaksi', () => getTransaksiData()),
+    peminjaman: safe('Peminjaman', () => getSheetData(DB.PEMINJAMAN)),
+    dokumentasi: safe('Dokumentasi', () => getSheetData(DB.DOKUMENTASI))
+  });
+
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+function checkLogin(username,password){
+
+  ensureDatabase();
+
+  const users =
+    getSheetData(DB.USERS);
+
+  const user =
+    users.find(u =>
+      String(u.Username).trim() ===
+      String(username).trim() &&
+      String(u.Password).trim() ===
+      String(password).trim()
+    );
+
+  if(!user){
+
+    return {
+      success:false,
+      message:'Username atau password salah!'
+    };
+
+  }
+
+  return {
+    success:true,
+    user:{
+      nama:user.Nama,
+      role:user.Role
+    }
+  };
+
+}
+
+
+/* =========================================================
+   ID
+========================================================= */
+
+function makeId(prefix){
+
+  return prefix +
+    '-' +
+    Utilities.getUuid()
+      .replace(/-/g,'')
+      .substring(0,8)
+      .toUpperCase();
+
+}
+
+
+/* =========================================================
+   GENERIC DELETE
+========================================================= */
+
+function deleteById(sheetName,id,label){
+
+  const sh =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(sheetName);
+
+  if(!sh){
+
+    return {
+      success:false,
+      message:'Sheet tidak ditemukan!'
+    };
+
+  }
+
+  const values =
+    sh.getDataRange().getValues();
+
+  for(let i=1;i<values.length;i++){
+
+    if(String(values[i][0]) === String(id)){
+
+      sh.deleteRow(i+1);
+
+      return {
+        success:true,
+        message:label+' berhasil dihapus!'
+      };
+
+    }
+
+  }
+
+  return {
+    success:false,
+    message:label+' tidak ditemukan!'
+  };
+
+}
+
+
+/* =========================================================
+   PRASARANA / RUANGAN
+========================================================= */
+
+function parseNumberID_(value, fallback){
+
+  if(value === undefined || value === null){
+    return fallback;
+  }
+
+  const text =
+    String(value)
+      .trim()
+      .replace(/\s/g,'');
+
+  if(!text){
+    return fallback;
+  }
+
+  /*
+   * Mendukung:
+   * 3,55 -> 3.55
+   * 3.55 -> 3.55
+   */
+  const normalized =
+    text.replace(',', '.');
+
+  const n =
+    Number(normalized);
+
+  return Number.isFinite(n)
+    ? n
+    : fallback;
+}
+
+
+function saveRuangan(data){
+
+  ensureDatabase();
+
+  const sh =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(DB.RUANGAN);
+
+  const id =
+    data.id ||
+    makeId('RNG');
+
+  const row = [
+
+    id,
+    data.nama || '',
+    String(data.panjang ?? '').trim(),
+    String(data.lebar ?? '').trim(),
+    Number(data.jumlah)||0,
+    data.kondisi || 'Baik',
+    data.statusKepemilikan || '',
+    data.keterangan || '',
+    data.selasar || '',
+    String(data.tinggi ?? '').trim(),
+    String(data.luas ?? '').trim()
+
+  ];
+
+  const values =
+    sh.getDataRange().getValues();
+
+  for(let i=1;i<values.length;i++){
+
+    if(String(values[i][0]) === String(id)){
+
+      sh.getRange(
+        i+1,
+        1,
+        1,
+        row.length
+      ).setValues([row]);
+
+      return {
+        success:true,
+        message:'Data prasarana berhasil diperbarui!'
+      };
+
+    }
+
+  }
+
+  sh.appendRow(row);
+
+  return {
+    success:true,
+    message:'Data prasarana berhasil ditambahkan!'
+  };
+
+}
+
+
+function deleteRuangan(id){
+
+  return deleteById(
+    DB.RUANGAN,
+    id,
+    'Data prasarana'
+  );
+
+}
+
+
+/* =========================================================
+   KELAS
+========================================================= */
+
+function saveKelas(data){
+
+  ensureDatabase();
+
+  const sh =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(DB.KELAS);
+
+  const id =
+    data.id ||
+    makeId('KLS');
+
+  const row = [
+
+    id,
+    data.nama || '',
+    data.ruangan || 'Ruang Belajar Murid',
+    data.keterangan || ''
+
+  ];
+
+  const values =
+    sh.getDataRange().getValues();
+
+  for(let i=1;i<values.length;i++){
+
+    if(String(values[i][0]) === String(id)){
+
+      sh.getRange(
+        i+1,
+        1,
+        1,
+        row.length
+      ).setValues([row]);
+
+      return {
+        success:true,
+        message:'Data kelas berhasil diperbarui!'
+      };
+
+    }
+
+  }
+
+  sh.appendRow(row);
+
+  return {
+    success:true,
+    message:'Kelas berhasil ditambahkan!'
+  };
+
+}
+
+
+function deleteKelas(id){
+
+  return deleteById(
+    DB.KELAS,
+    id,
+    'Data kelas'
+  );
+
+}
+
+
+function getKelas(){
+
+  ensureDatabase();
+
+  return getSheetData(DB.KELAS);
+
+}
+
+
+/* =========================================================
+   SARANA / BARANG
+========================================================= */
+
+function saveBarang(data){
+
+  ensureDatabase();
+
+  const sh =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(DB.BARANG);
+
+  const id =
+    data.id ||
+    makeId('BRG');
+
+  const row = [
+
+    id,
+
+    data.nama || '',
+
+    data.merk || '',
+
+    data.noSeri || '',
+
+    data.ukuran || '',
+
+    data.bahan || '',
+
+    data.tahun || '',
+
+    data.kodeBarang || '',
+
+    Number(data.jumlah)||0,
+
+    Number(data.harga)||0,
+
+    Number(data.baik)||0,
+
+    Number(data.kurangBaik)||0,
+
+    Number(data.rusakBerat)||0,
+
+    data.ruangan || '',
+
+    data.keterangan || ''
+
+  ];
+
+  const values =
+    sh.getDataRange().getValues();
+
+  for(let i=1;i<values.length;i++){
+
+    if(String(values[i][0]) === String(id)){
+
+      sh.getRange(
+        i+1,
+        1,
+        1,
+        row.length
+      ).setValues([row]);
+
+      return {
+        success:true,
+        message:'Data sarana berhasil diperbarui!'
+      };
+
+    }
+
+  }
+
+  sh.appendRow(row);
+
+  return {
+    success:true,
+    message:'Data sarana berhasil ditambahkan!'
+  };
+
+}
+
+
+
+/* =========================================================
+   QR CODE / PENCARIAN BARANG
+   QR berisi ID_Barang sehingga setiap barang mempunyai
+   identitas unik dan dapat dicari dengan kamera.
+========================================================= */
+
+function saveQrCodeToDrive(dataUrl, value, jenis, nama){
+  const text=String(value||'').trim();
+  if(!text) return {success:false,message:'Nilai QR kosong.'};
+  if(!String(dataUrl||'').startsWith('data:image/')) return {success:false,message:'Data QR tidak valid.'};
+  try{
+    const folderName='Inventaris SMK Sri Langkat - QR Code';
+    const it=DriveApp.getFoldersByName(folderName);
+    const folder=it.hasNext()?it.next():DriveApp.createFolder(folderName);
+    const base64=String(dataUrl).split(',')[1];
+    const blob=Utilities.newBlob(Utilities.base64Decode(base64),'image/png');
+    const safe=s=>String(s||'').replace(/[\\/:*?"<>|#%{}]/g,'-').trim();
+    const fileName=safe(jenis||'QR')+' - '+safe(nama||text)+' - '+safe(text)+'.png';
+    const old=folder.getFilesByName(fileName);
+    while(old.hasNext()){try{old.next().setTrashed(true)}catch(e){}}
+    const file=folder.createFile(blob.setName(fileName));
+    try{file.setSharing(DriveApp.Access.ANYONE_WITH_LINK,DriveApp.Permission.VIEW)}catch(e){}
+    return {success:true,message:'QR berhasil disimpan ke Google Drive.',fileId:file.getId(),fileName:file.getName(),url:file.getUrl()};
+  }catch(err){
+    return {success:false,message:'QR gagal disimpan ke Google Drive: '+err.message};
+  }
+}
+
+function getRuanganByQR(qrValue){
+  ensureDatabase();
+  const raw=String(qrValue||'').trim();
+  if(!raw) return {success:false,message:'QR Prasarana kosong.'};
+  const ruangan=getSheetData(DB.RUANGAN);
+  const found=ruangan.find(r=>String(r.ID_Ruangan||'').trim().toLowerCase()===raw.toLowerCase());
+  if(!found) return {success:false,message:'Prasarana dengan QR Code tersebut tidak ditemukan.'};
+  return {success:true,message:'Prasarana ditemukan.',ruangan:found};
+}
+
+/* =========================================================
+   HASIL SCAN QR PRASARANA
+   Mengambil prasarana + semua sarana di dalamnya + dokumentasi.
+========================================================= */
+function getPrasaranaScanData(qrValue){
+  ensureDatabase();
+
+  const raw = String(qrValue || '').trim();
+  if(!raw){
+    return {success:false,message:'QR Prasarana kosong.'};
+  }
+
+  // QR dapat berisi ID saja atau semua data prasarana dalam teks.
+  let roomValue = raw;
+  const roomIdLine = raw.match(/(?:ID_Ruangan|ID Prasarana)\s*:\s*([^\r\n|]+)/i);
+  if(roomIdLine) roomValue = roomIdLine[1].trim();
+
+  const ruangan = getSheetData(DB.RUANGAN);
+  const room = ruangan.find(r =>
+    String(r.ID_Ruangan || '').trim().toLowerCase() === roomValue.toLowerCase()
+  );
+
+  if(!room){
+    return {success:false,message:'Prasarana dengan QR Code tersebut tidak ditemukan.'};
+  }
+
+  const namaRuangan = String(room.Nama_Ruangan || '').trim();
+  const idRuangan = String(room.ID_Ruangan || '').trim();
+  const barang = getSheetData(DB.BARANG).filter(b => {
+    const lokasi = String(b.Ruangan || '').trim().toLowerCase();
+    return lokasi === namaRuangan.toLowerCase() || lokasi === idRuangan.toLowerCase();
+  });
+
+  const docs = getSheetData(DB.DOKUMENTASI);
+
+  const resultBarang = barang.map(b => {
+    const nama = String(b.Nama_Barang || '').trim();
+    const itemDocs = docs.filter(d =>
+      String(d.Ruangan || '').trim().toLowerCase() === namaRuangan.toLowerCase() &&
+      String(d.Nama_Barang || '').trim().toLowerCase() === nama.toLowerCase()
+    ).map(d => {
+      let image = '';
+      const fileId = d.File_ID || extractDriveFileId_(d.Foto);
+      if(fileId){
+        try{
+          const file = DriveApp.getFileById(fileId);
+          const blob = file.getBlob();
+          image = 'data:' + (blob.getContentType() || 'image/jpeg') + ';base64,' +
+            Utilities.base64Encode(blob.getBytes());
+        }catch(e){
+          image = '';
+        }
+      }
+      return {
+        ID_Dok:d.ID_Dok,
+        Keterangan:d.Keterangan || '',
+        Image:image,
+        Foto:d.Foto || ''
+      };
+    });
+
+    return {
+      ID_Barang:b.ID_Barang || '',
+      Nama_Barang:b.Nama_Barang || '',
+      Merk:b.Merk || '',
+      No_Seri:b.No_Seri || '',
+      Jumlah:b.Jumlah || 0,
+      Baik:b.Baik || 0,
+      Kurang_Baik:b.Kurang_Baik || 0,
+      Rusak_Berat:b.Rusak_Berat || 0,
+      Kode_Barang:b.Kode_Barang || '',
+      Ruangan:b.Ruangan || '',
+      Dokumentasi:itemDocs
+    };
+  });
+
+  return {
+    success:true,
+    message:'Prasarana ditemukan.',
+    ruangan:room,
+    barang:resultBarang,
+    totalBarang:resultBarang.length,
+    totalDokumentasi:resultBarang.reduce((n,b)=>n + b.Dokumentasi.length,0)
+  };
+}
+
+function getBarangByQR(qrValue){
+
+  ensureDatabase();
+
+  const raw = String(qrValue || '').trim();
+  if(!raw){
+    return {success:false,message:'QR Code kosong.'};
+  }
+
+  // Mendukung QR berisi ID langsung, URL lama, atau teks lengkap
+  // yang memuat seluruh informasi barang.
+  let value = raw;
+  const idLine = raw.match(/(?:ID_Barang|ID Barang)\s*:\s*([^\r\n|]+)/i);
+  const codeLine = raw.match(/(?:Kode_Barang|Kode Barang)\s*:\s*([^\r\n|]+)/i);
+  if(idLine) value = idLine[1].trim();
+  else if(codeLine) value = codeLine[1].trim();
+
+  try{
+    if(/^https?:\/\//i.test(raw)){
+      const m = raw.match(/[?&](?:id|barang|kode)=([^&#]+)/i);
+      if(m) value = decodeURIComponent(m[1]);
+    }
+  }catch(e){}
+
+  const barang = getSheetData(DB.BARANG);
+  const found = barang.find(b =>
+    String(b.ID_Barang || '').trim().toLowerCase() === value.toLowerCase() ||
+    String(b.Kode_Barang || '').trim().toLowerCase() === value.toLowerCase()
+  );
+
+  if(!found){
+    return {
+      success:false,
+      message:'Barang dengan QR Code tersebut tidak ditemukan.'
+    };
+  }
+
+  return {
+    success:true,
+    message:'Barang ditemukan.',
+    barang:found
+  };
+}
+
+function getBarangById(id){
+  ensureDatabase();
+  const value = String(id || '').trim();
+  const barang = getSheetData(DB.BARANG);
+  const found = barang.find(b => String(b.ID_Barang || '').trim() === value);
+  return found || null;
+}
+
+function deleteBarang(id){
+
+  return deleteById(
+    DB.BARANG,
+    id,
+    'Data sarana'
+  );
+
+}
+
+
+function getSaranaByRuangan(namaRuangan){
+
+  ensureDatabase();
+
+  return getSheetData(DB.BARANG)
+    .filter(b =>
+      String(b.Ruangan||'').trim() ===
+      String(namaRuangan||'').trim()
+    );
+
+}
+
+
+/* =========================================================
+   TRANSAKSI
+========================================================= */
+
+function parseHargaTransaksi_(value){
+  if(value === null || value === undefined || value === '') return 0;
+
+  // Mendukung input: 250000, 250.000, Rp 250.000, atau Rp250,000
+  let s = String(value).trim();
+  s = s.replace(/Rp/gi,'').replace(/\s/g,'');
+
+  // Format Indonesia: titik sebagai pemisah ribuan, koma sebagai desimal.
+  if(s.includes('.') && s.includes(',')){
+    s = s.replace(/\./g,'').replace(',','.');
+  }else if(s.includes('.')){
+    // Untuk harga rupiah, titik dianggap pemisah ribuan.
+    s = s.replace(/\./g,'');
+  }else if(s.includes(',')){
+    s = s.replace(/,/g,'');
+  }
+
+  s = s.replace(/[^0-9.-]/g,'');
+  const n = Number(s);
+  return isNaN(n) ? 0 : n;
+}
+
+function saveTransaksi(data){
+
+  ensureDatabase();
+
+  const sh =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(DB.TRANSAKSI);
+
+  const id =
+    data.id ||
+    makeId('TRX');
+
+  const jumlah =
+    Number(data.jumlah)||0;
+
+  const harga =
+    parseHargaTransaksi_(data.harga);
+
+  sh.appendRow([
+
+    id,
+
+    data.tanggal ||
+      formatDate(new Date()),
+
+    data.jenis || 'Masuk',
+
+    data.idBarang || '',
+
+    data.namaBarang || '',
+
+    jumlah,
+
+    harga,
+
+    data.keterangan || ''
+
+  ]);
+
+  adjustStock(
+    data.idBarang,
+    data.jenis,
+    jumlah
+  );
+
+  return {
+    success:true,
+    message:'Transaksi berhasil disimpan!'
+  };
+
+}
+
+
+function deleteTransaksi(id){
+
+  const sh =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(DB.TRANSAKSI);
+
+  const values =
+    sh.getDataRange().getValues();
+
+  for(let i=1;i<values.length;i++){
+
+    if(String(values[i][0]) === String(id)){
+
+      adjustStock(
+        values[i][3],
+        values[i][2],
+        -Number(values[i][5]||0)
+      );
+
+      sh.deleteRow(i+1);
+
+      return {
+        success:true,
+        message:'Transaksi berhasil dihapus!'
+      };
+
+    }
+
+  }
+
+  return {
+    success:false,
+    message:'Transaksi tidak ditemukan!'
+  };
+
+}
+
+
+function adjustStock(idBarang,jenis,jumlah){
+
+  const sh =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(DB.BARANG);
+
+  if(!sh)return;
+
+  const values =
+    sh.getDataRange().getValues();
+
+  for(let i=1;i<values.length;i++){
+
+    if(String(values[i][0]) === String(idBarang)){
+
+      const current =
+        Number(values[i][8])||0;
+
+      let result;
+
+      if(jenis === 'Masuk'){
+        result = current + jumlah;
+      }else{
+        result = current - jumlah;
+      }
+
+      sh.getRange(i+1,9)
+        .setValue(Math.max(0,result));
+
+      return;
+
+    }
+
+  }
+
+}
+
+
+/* =========================================================
+   PEMINJAMAN
+========================================================= */
+
+function savePeminjaman(data){
+
+  ensureDatabase();
+
+  const sh =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(DB.PEMINJAMAN);
+
+  const id =
+    data.id ||
+    makeId('PJM');
+
+  const jumlah =
+    Number(data.jumlah)||0;
+
+  sh.appendRow([
+
+    id,
+
+    data.tanggalPinjam ||
+      formatDate(new Date()),
+
+    data.peminjam || '',
+
+    data.idBarang || '',
+
+    data.namaBarang || '',
+
+    jumlah,
+
+    '-',
+
+    'Dipinjam'
+
+  ]);
+
+  adjustStock(
+    data.idBarang,
+    'Keluar',
+    jumlah
+  );
+
+  return {
+    success:true,
+    message:'Peminjaman berhasil dicatat!'
+  };
+
+}
+
+
+function processPengembalian(
+  idPinjam,
+  idBarang,
+  jumlah
+){
+
+  const sh =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(DB.PEMINJAMAN);
+
+  const values =
+    sh.getDataRange().getValues();
+
+  for(let i=1;i<values.length;i++){
+
+    if(String(values[i][0]) === String(idPinjam)){
+
+      if(String(values[i][7]) !== 'Dipinjam'){
+
+        return {
+          success:false,
+          message:'Barang sudah dikembalikan!'
+        };
+
+      }
+
+      sh.getRange(i+1,7)
+        .setValue(formatDate(new Date()));
+
+      sh.getRange(i+1,8)
+        .setValue('Dikembalikan');
+
+      adjustStock(
+        idBarang,
+        'Masuk',
+        Number(jumlah)||0
+      );
+
+      return {
+        success:true,
+        message:'Barang berhasil dikembalikan!'
+      };
+
+    }
+
+  }
+
+  return {
+    success:false,
+    message:'Data peminjaman tidak ditemukan!'
+  };
+
+}
+
+
+function deletePeminjaman(id){
+
+  const sh =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(DB.PEMINJAMAN);
+
+  const values =
+    sh.getDataRange().getValues();
+
+  for(let i=1;i<values.length;i++){
+
+    if(String(values[i][0]) === String(id)){
+
+      if(String(values[i][7]) === 'Dipinjam'){
+
+        adjustStock(
+          values[i][3],
+          'Masuk',
+          Number(values[i][5]||0)
+        );
+
+      }
+
+      sh.deleteRow(i+1);
+
+      return {
+        success:true,
+        message:'Peminjaman berhasil dihapus!'
+      };
+
+    }
+
+  }
+
+  return {
+    success:false,
+    message:'Peminjaman tidak ditemukan!'
+  };
+
+}
+
+
+/* =========================================================
+   DOKUMENTASI
+========================================================= */
+
+function getDriveFolder_(){
+
+  const folders =
+    DriveApp.getFoldersByName(DB.FOLDER);
+
+  return folders.hasNext()
+    ? folders.next()
+    : DriveApp.createFolder(DB.FOLDER);
+
+}
+
+
+function saveDokumentasi(data){
+
+  ensureDatabase();
+
+  if(!data || !data.file || !data.file.base64){
+
+    return {
+      success:false,
+      message:'Foto belum dipilih!'
+    };
+
+  }
+
+  const sh =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(DB.DOKUMENTASI);
+
+  const id =
+    makeId('DOK');
+
+  const folder =
+    getDriveFolder_();
+
+  const base64 =
+    String(data.file.base64)
+      .replace(/^data:[^;]+;base64,/,'');
+
+  const blob =
+    Utilities.newBlob(
+      Utilities.base64Decode(base64),
+      data.file.mimeType || 'image/jpeg',
+      data.file.name || id+'.jpg'
+    );
+
+  const file =
+    folder.createFile(blob);
+
+  /*
+   * File dibuat dapat dilihat oleh siapa pun
+   * yang mempunyai link.
+   */
+  try{
+
+    file.setSharing(
+      DriveApp.Access.ANYONE_WITH_LINK,
+      DriveApp.Permission.VIEW
+    );
+
+  }catch(e){}
+
+  sh.appendRow([
+
+    id,
+
+    data.ruangan || '',
+
+    data.namaBarang || '',
+
+    file.getUrl(),
+
+    data.keterangan || '',
+
+    file.getId()
+
+  ]);
+
+  return {
+    success:true,
+    message:'Dokumentasi berhasil disimpan ke Google Drive!',
+    id:id
+  };
+
+}
+
+
+/*
+ * Mengambil dokumentasi sekaligus mengubah
+ * gambar Drive menjadi Data URL.
+ *
+ * Dengan cara ini gambar tetap dapat tampil
+ * di aplikasi walaupun URL Drive tidak dapat
+ * langsung digunakan oleh <img>.
+ */
+function getDokumentasiSarana(
+  ruangan,
+  namaBarang
+){
+
+  ensureDatabase();
+
+  const data =
+    getSheetData(DB.DOKUMENTASI);
+
+  return data
+    .filter(d =>
+      String(d.Ruangan||'').trim() ===
+      String(ruangan||'').trim() &&
+      String(d.Nama_Barang||'').trim() ===
+      String(namaBarang||'').trim()
+    )
+    .map(d => {
+
+      let image = '';
+
+      const fileId =
+        d.File_ID ||
+        extractDriveFileId_(d.Foto);
+
+      if(fileId){
+
+        try{
+
+          const file =
+            DriveApp.getFileById(fileId);
+
+          const blob =
+            file.getBlob();
+
+          const mime =
+            blob.getContentType();
+
+          const base64 =
+            Utilities.base64Encode(
+              blob.getBytes()
+            );
+
+          image =
+            'data:' +
+            mime +
+            ';base64,' +
+            base64;
+
+        }catch(e){
+
+          image = '';
+
+        }
+
+      }
+
+      return {
+
+        ID_Dok:d.ID_Dok,
+
+        Ruangan:d.Ruangan,
+
+        Nama_Barang:d.Nama_Barang,
+
+        Foto:d.Foto,
+
+        Image:image,
+
+        Keterangan:d.Keterangan || ''
+
+      };
+
+    });
+
+}
+
+
+function deleteDokumentasi(id){
+
+  ensureDatabase();
+
+  const sh =
+    SpreadsheetApp
+      .getActiveSpreadsheet()
+      .getSheetByName(DB.DOKUMENTASI);
+
+  const values =
+    sh.getDataRange().getValues();
+
+  for(let i=1;i<values.length;i++){
+
+    if(String(values[i][0]) === String(id)){
+
+      const fileId =
+        values[i][5] ||
+        extractDriveFileId_(values[i][3]);
+
+      if(fileId){
+
+        try{
+
+          DriveApp
+            .getFileById(fileId)
+            .setTrashed(true);
+
+        }catch(e){}
+
+      }
+
+      sh.deleteRow(i+1);
+
+      return {
+        success:true,
+        message:'Dokumentasi berhasil dihapus!'
+      };
+
+    }
+
+  }
+
+  return {
+    success:false,
+    message:'Dokumentasi tidak ditemukan!'
+  };
+
+}
+
+
+function extractDriveFileId_(url){
+
+  const s =
+    String(url||'');
+
+  let m =
+    s.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+
+  if(!m){
+
+    m =
+      s.match(/\/d\/([a-zA-Z0-9_-]+)/);
+
+  }
+
+  return m ? m[1] : '';
+
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+function getDashboardStats(){
+
+  ensureDatabase();
+
+  const barang =
+    getSheetData(DB.BARANG);
+
+  const ruangan =
+    getSheetData(DB.RUANGAN);
+
+  const kelas =
+    getSheetData(DB.KELAS);
+
+  const transaksi =
+    getSheetData(DB.TRANSAKSI);
+
+  const peminjaman =
+    getSheetData(DB.PEMINJAMAN);
+
+  return {
+
+    totalBarang:
+      barang.reduce(
+        (a,b)=>a+(Number(b.Jumlah)||0),
+        0
+      ),
+
+    totalJenisBarang:
+      barang.length,
+
+    totalRuangan:
+      ruangan.length,
+
+    totalKelas:
+      kelas.length,
+
+    totalTransaksi:
+      transaksi.length,
+
+    peminjamanAktif:
+      peminjaman.filter(
+        p=>String(p.Status)==='Dipinjam'
+      ).length
+
+  };
+
+}
+
+
+/* =========================================================
+   UTIL
+========================================================= */
+
+function formatDate(date){
+
+  return Utilities.formatDate(
+    date,
+    Session.getScriptTimeZone() ||
+      'Asia/Jakarta',
+    'dd/MM/yyyy'
+  );
+
+}
